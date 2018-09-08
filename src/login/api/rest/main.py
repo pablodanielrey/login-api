@@ -84,6 +84,19 @@ def obtener_acceso_modulos(token=None):
     ]
     return json.dumps(a)            
 
+@app.route(API_BASE + '/login', methods=['POST'])
+@jsonapi
+def login():
+    data = request.get_json()
+    if not data:
+        return ('Datos no válidos', 401)
+    logging.info(data)
+    
+    if data['usuario'] == 'pablo':
+        return {'status':'ok'}
+    
+    return ('inválido',401)
+
 
 @app.route(API_BASE + '*', methods=['OPTIONS'])
 def options():

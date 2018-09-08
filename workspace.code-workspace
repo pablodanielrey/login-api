@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "/src/github/login-hydra-ory"
+		},
+		{
+			"path": "/src/gitlab/stacks"
 		}
 	],
 	"settings": {
