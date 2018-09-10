@@ -30,7 +30,7 @@ warden_url = os.environ['WARDEN_API_URL']
 from warden.sdk.warden import Warden
 warden = Warden(warden_url, client_id, client_secret, verify=VERIFY_SSL)
 
-from login.model import obtener_session
+from login.model import obtener_session, LoginModel
 
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='/src/login/web')
@@ -88,15 +88,23 @@ def obtener_acceso_modulos(token=None):
 @jsonapi
 def login():
     data = request.get_json()
-    if not data:
+    if not data or ('usuario' not in data and 'clave' not in data):
         return ('Datos no válidos', 401)
     logging.info(data)
-    
-    if data['usuario'] == 'pablo':
-        return {'status':'ok'}
-    
+    u = data['usuario']
+    c = data['clave']
+    with obtener_session(False) as s:
+        try:
+            token = LoginModel.login(s, u, c)
+            s.commit()
+            return {
+                'status':200,
+                'session':token
+            }
+        except Exception as e:
+            logging.exception(e)
+            return (str(e),401)
     return ('inválido',401)
-
 
 @app.route(API_BASE + '*', methods=['OPTIONS'])
 def options():
