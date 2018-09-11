@@ -7,14 +7,17 @@ import oidc
 from oidc.oidc import ClientCredentialsGrant
 
 from .entities import UsuarioClave, Sesion
+from .HydraModel import HydraModel
 
 class LoginModel:
 
     verify = bool(int(os.environ.get('VERIFY_SSL', 0)))
     USERS_API_URL = os.environ['USERS_API_URL']
+    OIDC_HOST = os.environ['OIDC_HOST']
     client_id = os.environ['OIDC_CLIENT_ID']
     client_secret = os.environ['OIDC_CLIENT_SECRET']
 
+    hydra = HydraModel(OIDC_HOST, client_id, client_secret, verify)
     grant = ClientCredentialsGrant(client_id, client_secret, verify=verify)
 
     @classmethod
@@ -46,3 +49,16 @@ class LoginModel:
             l.usuario_clave_id = ucid
             session.add(l)
         return l.token
+
+    @classmethod
+    def obtener_access_token(cls, session, sesion_token, consent_id):
+        ahora = datetime.datetime.now()
+        if session.query(Sesion).filter(Sesion.token == sesion_token, Sesion.expirado < ahora).count() < 1:
+            raise Exception('error de sesion')
+
+
+    """ pasos del proceso de login con hydra """
+
+    @classmethod
+    def chequear_login_challenge(cls, challenge):
+        return cls.hydra.chequear_login_challenge(challenge)

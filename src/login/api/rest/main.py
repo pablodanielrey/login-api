@@ -106,6 +106,13 @@ def login():
             return (str(e),401)
     return ('inválido',401)
 
+@app.route(API_BASE + '/login_challenge/<challenge>', methods=['GET'])
+@jsonapi
+def login_challenge(challenge):
+    if not challenge:
+        return ('invalid', 401)
+    return LoginModel.chequear_login_challenge(challenge)
+
 @app.route(API_BASE + '*', methods=['OPTIONS'])
 def options():
     if request.method == 'OPTIONS':
