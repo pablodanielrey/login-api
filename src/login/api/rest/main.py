@@ -98,10 +98,7 @@ def login():
         try:
             uid = LoginModel.login(s, u, c)
             url = LoginModel.aceptar_login_challenge(challenge,uid)
-            return {
-                'status':200,
-                'redirect':url
-            }
+            return url
         except Exception as e:
             logging.exception(e)
             return (str(e),401)

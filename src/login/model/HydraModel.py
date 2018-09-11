@@ -106,7 +106,7 @@ class HydraModel:
             logging.debug(r)
             raise Exception('error chequeando login challenge')
 
-        login = r.json()
+        login = r.json()    
         logging.debug(login)
         return login
         """
