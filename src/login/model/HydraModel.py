@@ -11,11 +11,9 @@ from oidc.oidc import ClientCredentialsGrant
 
 class HydraModel:
 
-    def __init__(self, oidc_host='http://hydra:4445', oidc_client='', oidc_secret='', verify=False):
+    def __init__(self, oidc_host, verify=False):
         self.verify = verify
         self.host = oidc_host
-        self.client = oidc_client
-        self.secret = oidc_secret
 
     def obtener_consent_challenge(self, challenge):
         """
