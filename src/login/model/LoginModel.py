@@ -60,5 +60,19 @@ class LoginModel:
     """ pasos del proceso de login con hydra """
 
     @classmethod
-    def chequear_login_challenge(cls, challenge):
-        return cls.hydra.chequear_login_challenge(challenge)
+    def obtener_login_challenge(cls, challenge):
+        return cls.hydra.obtener_login_challenge(challenge)
+
+    @classmethod
+    def aceptar_login_challenge(cls, challenge):
+        lc = cls.hydra.obtener_login_challenge(challenge)
+        return cls.hydra.aceptar_login_challenge(challenge, lc)
+
+    @classmethod
+    def obtener_consent_challenge(cls, challenge):
+        return cls.hydra.obtener_consent_challenge(challenge)
+
+    @classmethod
+    def aceptar_consent_challenge(cls, challenge):
+        c = cls.hydra.obtener_consent_challenge(challenge)
+        return cls.hydra.aceptar_consent_challenge(challenge, c)

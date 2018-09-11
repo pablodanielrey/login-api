@@ -106,12 +106,35 @@ def login():
             return (str(e),401)
     return ('inválido',401)
 
-@app.route(API_BASE + '/login_challenge/<challenge>', methods=['GET'])
+@app.route(API_BASE + '/login/<challenge>', methods=['GET'])
 @jsonapi
-def login_challenge(challenge):
+def get_login_challenge(challenge):
     if not challenge:
         return ('invalid', 401)
-    return LoginModel.chequear_login_challenge(challenge)
+    return LoginModel.obtener_login_challenge(challenge)
+
+@app.route(API_BASE + '/login/<challenge>/accept', methods=['PUT'])
+@jsonapi
+def accept_login_challenge(challenge):
+    if not challenge:
+        return ('invalid', 401)
+    return LoginModel.aceptar_login_challenge(challenge)
+
+@app.route(API_BASE + '/consent/<challenge>', methods=['GET'])
+@jsonapi
+def get_consent_challenge(challenge):
+    if not challenge:
+        return ('invalid', 401)
+    return LoginModel.obtener_consent_challenge(challenge)
+
+@app.route(API_BASE + '/consent/<challenge>/accept', methods=['PUT'])
+@jsonapi
+def accept_consent_challenge(challenge):
+    if not challenge:
+        return ('invalid', 401)
+    return LoginModel.aceptar_consent_challenge(challenge)
+
+
 
 @app.route(API_BASE + '*', methods=['OPTIONS'])
 def options():
