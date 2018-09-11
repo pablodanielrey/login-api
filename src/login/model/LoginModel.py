@@ -35,12 +35,6 @@ class LoginModel:
         return hashlib.sha1(h).hexdigest()
 
     @classmethod
-    def login(cls, session, usuario, clave):
-        c = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave).one()
-        token = cls._crear_sesion(session, c.id)
-        return token
-
-    @classmethod
     def _crear_sesion(cls, session, ucid):
         ahora = datetime.datetime.now()
         l = session.query(Sesion).filter(Sesion.usuario_clave_id == ucid, Sesion.expirado < ahora).one_or_none()
@@ -58,6 +52,8 @@ class LoginModel:
             raise Exception('error de sesion')
 
 
+
+
     """ pasos del proceso de login con hydra """
 
     @classmethod
@@ -65,8 +61,15 @@ class LoginModel:
         return cls.hydra.obtener_login_challenge(challenge)
 
     @classmethod
-    def aceptar_login_challenge(cls, challenge):
+    def login(cls, session, usuario, clave):
+        c = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave).one()
+        return c.usuario_id
+
+    @classmethod
+    def aceptar_login_challenge(cls, challenge, uid=None):
         lc = cls.hydra.obtener_login_challenge(challenge)
+        if uid:
+            lc['subject'] = uid
         return cls.hydra.aceptar_login_challenge(challenge, lc)
 
     @classmethod

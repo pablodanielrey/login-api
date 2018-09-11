@@ -88,18 +88,19 @@ def obtener_acceso_modulos(token=None):
 @jsonapi
 def login():
     data = request.get_json()
-    if not data or ('usuario' not in data and 'clave' not in data):
+    if not data or ('usuario' not in data and 'clave' not in data and 'challenge' not in data):
         return ('Datos no válidos', 401)
     logging.info(data)
     u = data['usuario']
     c = data['clave']
+    challenge = data['challenge']
     with obtener_session(False) as s:
         try:
-            token = LoginModel.login(s, u, c)
-            s.commit()
+            uid = LoginModel.login(s, u, c)
+            url = LoginModel.aceptar_login_challenge(challenge,uid)
             return {
                 'status':200,
-                'session':token
+                'redirect':url
             }
         except Exception as e:
             logging.exception(e)
