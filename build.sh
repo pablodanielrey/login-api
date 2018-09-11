@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo docker build -t assistance-api -f docker/dockerfile .
+sudo docker build -t login-api -f docker/dockerfile .
