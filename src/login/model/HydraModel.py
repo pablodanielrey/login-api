@@ -118,6 +118,7 @@ class HydraModel:
     def denegar_login_challenge(self, challenge, data):
         url = '{}/oauth2/auth/requests/login/{}/reject'.format(self.host, challenge)
         h = {
+            'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
         }
         r = requests.put(url, headers=h, json=data, verify=self.verify)
@@ -126,3 +127,54 @@ class HydraModel:
             raise Exception('error denegando el challenge de login')
         response = r.json()
         return response
+
+
+    """
+        métodos de administración de hydra. para la aplicación de administracion
+    """
+
+    def obtener_consent_sesiones(self, uid):
+        url = '{}/oauth2/auth/sessions/consent/{}'.format(self.host, uid)
+        h = {
+            'X-Forwarded-Proto':'https',
+            'Content-Type': 'application/json'
+        }
+        r = requests.get(url, headers=h, verify=self.verify)
+        if not r.ok:
+            logging.debug(r)
+            raise Exception(r.status_code)
+        response = r.json()
+        return response        
+
+    def eliminar_sesiones_usuario(self, uid):
+        url = '{}/oauth2/auth/sessions/consent/{}'.format(self.host, uid)
+        h = {
+            'X-Forwarded-Proto':'https',
+            'Content-Type': 'application/json'
+        }
+        r = requests.delete(url, headers=h, verify=self.verify)
+        if not r.ok:
+            logging.debug(r)
+            raise Exception(r.status_code)
+
+    def eliminar_sesiones_cliente_usuario(self, cid, uid):
+        url = '{}/oauth2/auth/sessions/consent/{}/{}'.format(self.host, uid, cid)
+        h = {
+            'X-Forwarded-Proto':'https',
+            'Content-Type': 'application/json'
+        }
+        r = requests.delete(url, headers=h, verify=self.verify)
+        if not r.ok:
+            logging.debug(r)
+            raise Exception(r.status_code)
+
+    def eliminar_sesion_login_usuario(self, uid):
+        url = '{}/oauth2/auth/sessions/login/{}'.format(self.host, uid)
+        h = {
+            'X-Forwarded-Proto':'https',
+            'Content-Type': 'application/json'
+        }
+        r = requests.delete(url, headers=h, verify=self.verify)
+        if not r.ok:
+            logging.debug(r)
+            raise Exception(r.status_code)

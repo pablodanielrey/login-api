@@ -136,3 +136,22 @@ class LoginModel:
             }
         }            
         return cls.hydra.aceptar_consent_challenge(challenge, data)
+
+
+    """
+        métodos utilitarios para la administración 
+    """
+
+    @classmethod
+    def obtener_sesiones_usuario(cls, uid):
+        return cls.hydra.obtener_consent_sesiones(uid)
+
+    @classmethod
+    def eliminar_sesiones_usuario(cls, uid):
+        cls.hydra.eliminar_sesion_login_usuario(uid)
+        cls.hydra.eliminar_sesiones_usuario(uid)
+        
+    @classmethod
+    def eliminar_sesiones_usuario_cliente(cls, uid, cid):
+        cls.hydra.eliminar_sesiones_cliente_usuario(cid, uid)
+

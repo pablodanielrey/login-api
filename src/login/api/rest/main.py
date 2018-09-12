@@ -125,6 +125,29 @@ def init_consent_flow(challenge):
     para herramientas de administracion
 """
 
+@app.route(API_BASE + '/sessions/<uid>', methods=['GET'])
+@jsonapi
+def get_user_sessions(uid):
+    if not uid:
+        return ('invalid', 401)
+    return LoginModel.obtener_sesiones_usuario(uid)
+
+@app.route(API_BASE + '/sessions/<uid>', methods=['DELETE'])
+@jsonapi
+def delete_user_sessions(uid):
+    if not uid:
+        return ('invalid', 401)
+    LoginModel.eliminar_sesiones_usuario(uid)
+    return {'status_code':200}
+
+@app.route(API_BASE + '/sessions/<uid>/<cid>', methods=['DELETE'])
+@jsonapi
+def delete_user_client_sessions(uid, cid):
+    if not uid or not cid:
+        return ('invalid', 401)
+    LoginModel.eliminar_sesiones_usuario_cliente(uid, cid)
+    return {'status_code':200}
+
 """
 @app.route(API_BASE + '/login/<challenge>', methods=['GET'])
 @jsonapi
