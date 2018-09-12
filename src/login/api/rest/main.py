@@ -84,6 +84,13 @@ def obtener_acceso_modulos(token=None):
     ]
     return json.dumps(a)            
 
+@app.route(API_BASE + '/init_login_flow/<challenge>', methods=['GET'])
+@jsonapi
+def init_login_flow(challenge):
+    if not challenge:
+        return ('invalid', 401)
+    return LoginModel.init_login_flow(challenge)
+
 @app.route(API_BASE + '/login', methods=['POST'])
 @jsonapi
 def login():
@@ -96,14 +103,29 @@ def login():
     challenge = data['challenge']
     with obtener_session(False) as s:
         try:
-            uid = LoginModel.login(s, u, c)
-            url = LoginModel.aceptar_login_challenge(challenge,uid)
-            return url
+            r = LoginModel.login(s, u, c, challenge)
+            return r
         except Exception as e:
             logging.exception(e)
             return (str(e),401)
     return ('inválido',401)
 
+
+@app.route(API_BASE + '/init_consent_flow/<challenge>', methods=['GET'])
+@jsonapi
+def init_consent_flow(challenge):
+    if not challenge:
+        return ('invalid', 401)
+    return LoginModel.init_consent_flow(challenge)
+
+
+
+"""
+    los siguientes son métodos de la interface de hydra.
+    para herramientas de administracion
+"""
+
+"""
 @app.route(API_BASE + '/login/<challenge>', methods=['GET'])
 @jsonapi
 def get_login_challenge(challenge):
@@ -131,7 +153,7 @@ def accept_consent_challenge(challenge):
     if not challenge:
         return ('invalid', 401)
     return LoginModel.aceptar_consent_challenge(challenge)
-
+"""
 
 
 @app.route(API_BASE + '*', methods=['OPTIONS'])

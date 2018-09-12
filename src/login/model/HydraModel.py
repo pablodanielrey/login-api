@@ -43,17 +43,8 @@ class HydraModel:
         logging.debug(consent)
         return consent
 
-    def aceptar_consent_challenge(self, challenge, consent):
+    def aceptar_consent_challenge(self, challenge, data):
         url = '{}/oauth2/auth/requests/consent/{}/accept'.format(self.host, challenge)
-        data = {
-            'grant_scope': consent['requested_scope'],
-            'remember': False if consent['skip'] else True,
-            'remember_for': 3600,
-            'session':{
-                'access_token':{},
-                'id_token':{}
-            }
-        }
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -64,7 +55,7 @@ class HydraModel:
             raise Exception('error aceptando el challenge de consent')
         response = r.json()
         logging.debug(response)
-        return response['redirect_to']
+        return response
 
     def denegar_consent_challenge(self, challenge):
         url = '{}/oauth2/auth/requests/consent/{}/reject'.format(self.host, challenge)
@@ -80,7 +71,7 @@ class HydraModel:
             logging.debug(r)
             raise Exception('error denegando el challenge de login')
         response = r.json()
-        return response['redirect_to']
+        return response
 
     def obtener_login_challenge(self, challenge):
         """
@@ -109,19 +100,9 @@ class HydraModel:
         login = r.json()    
         logging.debug(login)
         return login
-        """
-        if login['skip']:
-            redireccion = self._aceptar_login_challenge(challenge, login)
-        """
 
-    def aceptar_login_challenge(self, challenge, login_request):
+    def aceptar_login_challenge(self, challenge, data):
         url = '{}/oauth2/auth/requests/login/{}/accept'.format(self.host, challenge)
-        data = {
-            'subject': login_request['subject'],
-            'remember': False if login_request['skip'] else True,
-            'remember_for': 3600,
-            'acr':''
-        }
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -132,14 +113,10 @@ class HydraModel:
             raise Exception('error aceptando el challenge de login')
         response = r.json()
         logging.debug(response)
-        return response['redirect_to']
+        return response
 
-    def _denegar_login_challenge(self, challenge, login_request):
+    def denegar_login_challenge(self, challenge, data):
         url = '{}/oauth2/auth/requests/login/{}/reject'.format(self.host, challenge)
-        data = {
-            'error':'id_del_error',
-            'error_description': 'descripción del error'
-        }
         h = {
             'Content-Type': 'application/json'
         }
@@ -148,4 +125,4 @@ class HydraModel:
             logging.debug(r)
             raise Exception('error denegando el challenge de login')
         response = r.json()
-        return response['redirect_to']
+        return response

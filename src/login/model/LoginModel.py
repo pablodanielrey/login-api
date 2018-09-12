@@ -54,29 +54,85 @@ class LoginModel:
 
 
 
-    """ pasos del proceso de login con hydra """
+    """ 
+        -----------------
+        El flujo de login 
+        -----------------
+    """
 
     @classmethod
-    def obtener_login_challenge(cls, challenge):
-        return cls.hydra.obtener_login_challenge(challenge)
-
-    @classmethod
-    def login(cls, session, usuario, clave):
-        c = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave).one()
-        return c.usuario_id
-
-    @classmethod
-    def aceptar_login_challenge(cls, challenge, uid=None):
+    def init_login_flow(cls, challenge):
         lc = cls.hydra.obtener_login_challenge(challenge)
-        if uid:
-            lc['subject'] = uid
-        return cls.hydra.aceptar_login_challenge(challenge, lc)
+        r = {
+            'redirect_to': None
+        }
+        if lc['skip']:
+            r = cls.aceptar_login_challenge(challenge,lc)
+        return r
 
     @classmethod
-    def obtener_consent_challenge(cls, challenge):
-        return cls.hydra.obtener_consent_challenge(challenge)
+    def login(cls, session, usuario, clave, challenge):
+        c = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave).one_or_none()
+        if not c:
+            r = cls.denegar_login_challenge(challenge, error='unknown_user', descripcion='Usuario o clave incorrectos')
+        else:
+            r = cls.aceptar_login_challenge(challenge, uid=c.usuario_id)
+        return r
 
     @classmethod
-    def aceptar_consent_challenge(cls, challenge):
-        c = cls.hydra.obtener_consent_challenge(challenge)
-        return cls.hydra.aceptar_consent_challenge(challenge, c)
+    def aceptar_login_challenge(cls, challenge, lc=None, uid=None, recordar=True, timeout=3600):
+        if not lc:
+            lc = cls.hydra.obtener_login_challenge(challenge)
+        data = {
+            'subject': lc['subject'] if lc['skip'] else uid,
+            'remember': False if lc['skip'] else recordar,
+            'remember_for': timeout,
+            'acr':''
+        }
+        return cls.hydra.aceptar_login_challenge(challenge, data)
+
+    @classmethod
+    def denegar_login_challenge(cls, challenge, error='', descripcion=''):
+        data = {
+            'error': error,
+            'error_description': descripcion
+        }
+        return cls.hydra.denegar_login_challenge(challenge, data)
+
+
+    """ 
+        ---------------------
+        El flujo de consent 
+        ---------------------
+    """
+
+    @classmethod
+    def init_consent_flow(cls, challenge):
+        cc = cls.hydra.obtener_consent_challenge(challenge)
+        r = {
+            'redirect_to': None
+        }
+        if cc['skip']:
+            r = cls.aceptar_consent_challenge(challenge,cc)
+        else:
+            """
+                En nuestro caso siempre aceptamos los consent ya que son apps internas
+                Para cumplir con la especificación habría que mostrar una pantalla con el consent de los scopes
+            """
+            r = cls.aceptar_consent_challenge(challenge,cc)
+        return r
+
+    @classmethod
+    def aceptar_consent_challenge(cls, challenge, cc=None, recordar=True, timeout=3600):
+        if not cc:
+            cc = cls.hydra.obtener_consent_challenge(challenge)
+        data = {
+            'grant_scope': cc['requested_scope'],
+            'remember': False if cc['skip'] else recordar,
+            'remember_for': timeout,
+            'session':{
+                'access_token':{},
+                'id_token':{}
+            }
+        }            
+        return cls.hydra.aceptar_consent_challenge(challenge, data)
