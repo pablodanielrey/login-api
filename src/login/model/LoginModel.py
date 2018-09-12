@@ -6,7 +6,7 @@ import hashlib
 import oidc
 from oidc.oidc import ClientCredentialsGrant
 
-from .entities import UsuarioClave, Sesion
+from .entities import UsuarioClave
 from .HydraModel import HydraModel
 
 class LoginModel:
@@ -33,25 +33,6 @@ class LoginModel:
         d = str(datetime.datetime.now())
         h = '{}-{}'.format(sid,d).encode('utf-8')
         return hashlib.sha1(h).hexdigest()
-
-    @classmethod
-    def _crear_sesion(cls, session, ucid):
-        ahora = datetime.datetime.now()
-        l = session.query(Sesion).filter(Sesion.usuario_clave_id == ucid, Sesion.expirado < ahora).one_or_none()
-        if not l:
-            l = Sesion()
-            l.token = cls._obtener_token_sesion(l.id)
-            l.usuario_clave_id = ucid
-            session.add(l)
-        return l.token
-
-    @classmethod
-    def obtener_access_token(cls, session, sesion_token, consent_id):
-        ahora = datetime.datetime.now()
-        if session.query(Sesion).filter(Sesion.token == sesion_token, Sesion.expirado < ahora).count() < 1:
-            raise Exception('error de sesion')
-
-
 
 
     """ 

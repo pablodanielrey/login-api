@@ -9,3 +9,6 @@ class UsuarioClave(Base):
     usuario_id = Column(String, nullable=False)
     usuario = Column(String)
     clave = Column(String)
+    expiracion = Column(DateTime)
+    eliminada = Column(DateTime)
+    debe_cambiarla = Column(Boolean, default=False)
