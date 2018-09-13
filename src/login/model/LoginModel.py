@@ -12,14 +12,13 @@ from .HydraModel import HydraModel
 class LoginModel:
 
     verify = bool(int(os.environ.get('VERIFY_SSL', 0)))
-    USERS_API_URL = os.environ['USERS_API_URL']
-    OIDC_HOST = os.environ['OIDC_HOST']
-    OIDC_ADMIN_HOST = os.environ['OIDC_ADMIN_HOST']
+    OIDC_URL = os.environ['OIDC_URL']
+    OIDC_ADMIN_URL = os.environ['OIDC_ADMIN_URL']
     client_id = os.environ['OIDC_CLIENT_ID']
     client_secret = os.environ['OIDC_CLIENT_SECRET']
 
-    hydra = HydraModel(OIDC_ADMIN_HOST, verify)
-    grant = ClientCredentialsGrant(client_id, client_secret, verify=verify)
+    hydra = HydraModel(OIDC_ADMIN_URL, verify)
+    grant = ClientCredentialsGrant(OIDC_URL, client_id, client_secret, verify=verify)
 
     @classmethod
     def _obtener_token(cls):

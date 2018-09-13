@@ -17,18 +17,17 @@ from flask_jsontools import jsonapi
 from dateutil import parser
 
 VERIFY_SSL = bool(int(os.environ.get('VERIFY_SSL',0)))
+OIDC_ADMIN_URL = os.environ['OIDC_ADMIN_URL']
 
 from rest_utils import register_encoder
 
-import oidc
-from oidc.oidc import TokenIntrospection
 client_id = os.environ['OIDC_CLIENT_ID']
 client_secret = os.environ['OIDC_CLIENT_SECRET']
-rs = TokenIntrospection(client_id, client_secret, verify=VERIFY_SSL)
+oidc_url = os.environ['OIDC_URL']
 
 warden_url = os.environ['WARDEN_API_URL']
 from warden.sdk.warden import Warden
-warden = Warden(warden_url, client_id, client_secret, verify=VERIFY_SSL)
+warden = Warden(oidc_url, warden_url, client_id, client_secret, verify=VERIFY_SSL)
 
 from login.model import obtener_session, LoginModel
 
@@ -40,7 +39,7 @@ register_encoder(app)
 API_BASE = os.environ['API_BASE']
 
 @app.route(API_BASE + '/acceso_modulos', methods=['GET'])
-@rs.require_valid_token
+@warden.require_valid_token
 @jsonapi
 def obtener_acceso_modulos(token=None):
 
@@ -133,15 +132,13 @@ def logout(id_token, client_id):
 
 
 @app.route(API_BASE + '/usuario/<uid>/generar_clave', methods=['GET'])
+@warden.require_valid_token
 @jsonapi
-def usuario_generar_clave(uid):
+def usuario_generar_clave(uid, token):
     if not uid:
         return ('invalid', 401)
     
     return {'uid':'', 'clave':''}
-
-
-
 
 
 
@@ -151,8 +148,9 @@ def usuario_generar_clave(uid):
 """
 
 @app.route(API_BASE + '/sessions/<uid>', methods=['GET'])
+@warden.require_valid_token
 @jsonapi
-def get_user_sessions(uid):
+def get_user_sessions(uid, token=None):
     if not uid:
         return ('invalid', 401)
     return LoginModel.obtener_sesiones_usuario(uid)
