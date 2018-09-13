@@ -119,6 +119,31 @@ def init_consent_flow(challenge):
     return LoginModel.init_consent_flow(challenge)
 
 
+"""
+    métodos dedicados al manejo de sesion
+"""
+@app.route(API_BASE + '/logout/<id_token>/<client_id>', methods=['GET'])
+@jsonapi
+def logout(id_token, client_id):
+    if not id_token or not client_id:
+        return ('invalid', 401)
+    
+    return {'status_code':200}
+
+
+
+@app.route(API_BASE + '/usuario/<uid>/generar_clave', methods=['GET'])
+@jsonapi
+def usuario_generar_clave(uid):
+    if not uid:
+        return ('invalid', 401)
+    
+    return {'uid':'', 'clave':''}
+
+
+
+
+
 
 """
     los siguientes son métodos de la interface de hydra.
