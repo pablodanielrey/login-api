@@ -19,7 +19,7 @@ class LoginModel:
 
     hydra = HydraModel(OIDC_ADMIN_URL, verify)
     grant = ClientCredentialsGrant(OIDC_URL, client_id, client_secret, verify=verify)
-
+    
     @classmethod
     def _obtener_token(cls):
         token = cls.grant.get_token(cls.grant.access_token())
