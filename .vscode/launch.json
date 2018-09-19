@@ -5,16 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Attach",
-            "type": "python",
-            "request": "attach",
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "${workspaceFolder}",
-            "port": 3000,
-            "secret": "my_secret",
-            "host": "localhost"
-        },
-        {
             "name": "Python: Flask (0.11.x or later)",
             "type": "python",
             "request": "launch",
@@ -29,7 +19,7 @@
                 "--no-debugger",
                 "--no-reload",
                 "--host=0.0.0.0",
-                "--port=9006"
+                "--port=10002"
             ]
         }
     ]
