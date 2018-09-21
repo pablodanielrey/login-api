@@ -95,7 +95,7 @@ class HydraModel:
         r = requests.get(url, headers=h, verify=self.verify, allow_redirects=False)
         if not r.ok:
             logging.debug(r)
-            raise Exception('error chequeando login challenge')
+            raise Exception(r.json())
 
         login = r.json()    
         logging.debug(login)
