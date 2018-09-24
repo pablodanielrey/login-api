@@ -129,8 +129,6 @@ def logout(id_token, client_id):
     
     return {'status_code':200}
 
-
-
 @app.route(API_BASE + '/usuario/<uid>/generar_clave', methods=['GET'])
 @warden.require_valid_token
 @jsonapi
@@ -170,6 +168,54 @@ def delete_user_client_sessions(uid, cid):
         return ('invalid', 401)
     LoginModel.eliminar_sesiones_usuario_cliente(uid, cid)
     return {'status_code':200}
+
+
+"""
+    los métodos siguientes son para el manejo de recuperación de clave.
+"""
+from login.model.RecuperarClaveModel import RecuperarClaveModel
+
+RC_BASE = API_BASE + '/recuperar_clave'
+
+@app.route(RC_BASE + '/verificar_dni/<dni>', methods=['GET'])
+@jsonapi
+def verificar_dni(dni):
+    assert dni is not None
+    with obtener_session(False) as s:
+        u = RecuperarClaveModel.verificar_dni(dni)
+        r = None
+        if not u:
+            r = {
+                'ok': False,
+                'error': {'error':'200', 'descripcion':'No existe ese dni'}
+            }
+        else:
+            r = {
+                'ok':True,
+                'tiene_correo': u['tiene_correo'],
+                'usuario': u['usuario']
+            }
+        return r
+
+@app.route(RC_BASE + '/obtener_correo/<uid>', methods=['GET'])
+@jsonapi
+def obtener_correo(uid):
+    assert uid is not None
+    with obtener_session(False) as s:
+        c = RecuperarClaveModel.obtener_correo(uid)
+        r = None
+        if not c:
+            r = {
+                'ok': False,
+                'error': {'error':'200', 'descripcion':'no se pudo obtener la información de correo'}
+            }
+        else:
+            r = {
+                'ok':True,
+                'correo': c['correo'],
+                'usuario': c['usuario']
+            }
+        return r        
 
 """
 @app.route(API_BASE + '/login/<challenge>', methods=['GET'])
