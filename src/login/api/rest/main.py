@@ -29,7 +29,7 @@ warden_url = os.environ['WARDEN_API_URL']
 from warden.sdk.warden import Warden
 warden = Warden(oidc_url, warden_url, client_id, client_secret, verify=VERIFY_SSL)
 
-from login.model import obtener_session, LoginModel
+from login.model import obtener_session, LoginModel, RecuperarClaveModel
 
 # set the project root directory as the static folder, you can set others.
 app = Flask(__name__, static_url_path='/src/login/web')
@@ -173,8 +173,6 @@ def delete_user_client_sessions(uid, cid):
 """
     los métodos siguientes son para el manejo de recuperación de clave.
 """
-from login.model.RecuperarClaveModel import RecuperarClaveModel
-
 RC_BASE = API_BASE + '/recuperar_clave'
 
 @app.route(RC_BASE + '/verificar_dni/<dni>', methods=['GET'])
@@ -226,6 +224,7 @@ def enviar_codigo(eid):
 
     with obtener_session(False) as s:
         c = RecuperarClaveModel.enviar_codigo(s, eid, data['correo'])
+        s.commit()
         r = None
         if not c:
             r = {

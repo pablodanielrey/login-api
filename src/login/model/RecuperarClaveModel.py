@@ -187,7 +187,7 @@ class RecuperarClaveModel:
             return None
 
         codigo = None
-        intentos = session.query(ResetClave).filter(ResetClave.correo == correo, ResetClave.confirmado is None).all()
+        intentos = session.query(ResetClave).filter(ResetClave.correo == correo, ResetClave.confirmado == None).all()
         for rc in intentos:
             codigo = rc.codigo
             break
@@ -197,6 +197,7 @@ class RecuperarClaveModel:
         rid = str(uuid.uuid4())
         rc = ResetClave()
         rc.codigo = codigo
+        rc.correo = correo
         rc.id = rid
         session.add(rc)
 
