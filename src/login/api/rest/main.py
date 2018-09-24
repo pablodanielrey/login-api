@@ -215,7 +215,29 @@ def obtener_correo(uid):
                 'correo': c['correo'],
                 'usuario': c['usuario']
             }
-        return r        
+        return r
+
+@app.route(RC_BASE + '/enviar_codigo/<eid>', methods=['POST'])
+@jsonapi
+def enviar_codigo(eid):
+    assert eid is not None
+    data = request.get_json()
+    assert 'correo' in data
+
+    with obtener_session(False) as s:
+        c = RecuperarClaveModel.enviar_codigo(s, eid, data['correo'])
+        r = None
+        if not c:
+            r = {
+                'ok': False,
+                'error': {'error':'200', 'descripcion':'no se pudo enviar el correo'}
+            }
+        else:
+            r = {
+                'ok':True,
+                'iid':c
+            }
+        return r              
 
 """
 @app.route(API_BASE + '/login/<challenge>', methods=['GET'])

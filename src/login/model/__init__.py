@@ -24,6 +24,10 @@ def obtener_session(echo=True):
         session.close()
         engine.dispose()
 
+
+from .LoginModel import LoginModel
+from .RecuperarClaveModel import RecuperarClaveModel
+
 __all__ = [
     'LoginModel',
     'RecuperarClaveModel'

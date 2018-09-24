@@ -6,11 +6,12 @@ import requests
 import logging
 import redis
 import json
+import uuid
 
 import oidc
 from oidc.oidc import ClientCredentialsGrant
 
-from .entities import UsuarioClave
+from .entities import UsuarioClave, ResetClave
 from .HydraModel import HydraModel
 
 class RecuperarClaveModel:
@@ -50,7 +51,6 @@ class RecuperarClaveModel:
     @classmethod
     def _setear_usuario_cache(cls, usr):
         uid = usr['id']
-        mails = []
         for m in usr['mails']:
             mid = m['id']
             cls.redis.hmset('r_mail_{}'.format(mid), m)
@@ -66,6 +66,15 @@ class RecuperarClaveModel:
         return m
 
     @classmethod
+    def _obtener_correo_cache(cls, mid):
+        key = 'r_mail_{}'.format(mid)
+        if not cls.redis.hexists(key,'id'):
+            return None
+        mail = cls.redis.hgetall(key)
+        fmail = cls._format_mail_from_redis(mail)
+        return fmail
+
+    @classmethod
     def _obtener_usuario_cache(cls, uid):
         assert uid is not None
         usr = cls.redis.hgetall('r_usuario_uid_{}'.format(uid))
@@ -73,12 +82,14 @@ class RecuperarClaveModel:
             try:
                 uid = usr['id']
                 mailids = cls.redis.smembers('r_usuario_mails_{}'.format(uid))
-                mails = [cls._format_mail_from_redis(cls.redis.hgetall('r_mail_{}'.format(mid))) for mid in mailids if mid]
-                usr['mails'] = mails
+                mails = [cls._obtener_correo_cache(mid) for mid in mailids if mid]
+                usr['mails'] = [m for m in mails if m]
                 return usr
             except Exception as e:
                 logging.exception(e)
         return None
+
+
 
     @classmethod
     def _obtener_usuario_por_uid(cls, uid, token=None):
@@ -156,3 +167,39 @@ class RecuperarClaveModel:
             'usuario': usr
         }
         return r
+
+    @classmethod
+    def _generar_codigo(cls):
+        return str(uuid.uuid4())[:8]
+
+    @classmethod
+    def _enviar_codigo_template(cls, codigo, correo):
+        pass
+
+    @classmethod
+    def enviar_codigo(cls, session, eid, correo):
+        correo = correo.lower().strip()
+        mail = cls._obtener_correo_cache(eid)
+        if not mail:
+            return None
+        
+        if correo not in mail['email'].lower().strip():
+            return None
+
+        codigo = None
+        intentos = session.query(ResetClave).filter(ResetClave.correo = correo, ResetClave.confirmado is None).all()
+        for rc in intentos:
+            codigo = rc.codigo
+            break
+        else:
+            codigo = cls._generar_codigo()
+
+        rid = str(uuid.uuid4())
+        rc = ResetClave()
+        rc.codigo = codigo
+        rc.id = rid
+        session.add(rc)
+
+        cls._enviar_codigo_template(codigo, correo)
+
+        return rid
