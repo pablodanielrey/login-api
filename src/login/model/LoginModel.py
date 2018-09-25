@@ -2,6 +2,7 @@
 import os
 import datetime
 import hashlib
+import logging
 
 from sqlalchemy import or_, and_
 
@@ -56,16 +57,18 @@ class LoginModel:
     def login(cls, session, usuario, clave, challenge):
 
         ahora = datetime.datetime.now()
+        logging.info('FECHA ACTUAL')
+        logging.info(ahora)
 
         q = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave, UsuarioClave.eliminada == None)
-        q = q.filter(or_(UsuarioClave.expiracion == None, UsuarioClave.expiracion <= ahora))
+        q = q.filter(or_(UsuarioClave.expiracion == None, UsuarioClave.expiracion > ahora))
         c = q.one_or_none()
         if not c:
-            """
-            #TODO: hace falta chequear el debe cambiarla para loguearlo y redirigirlo a usuarios.
-            """
             r = cls.denegar_login_challenge(challenge, error='unknown_user', descripcion='Usuario o clave incorrectos')
         else:
+            """
+            #TODO: hace falta chequear el debe cambiarla para loguearlo y redirigirlo a usuarios.
+            """            
             r = cls.aceptar_login_challenge(challenge, uid=c.usuario_id)
         return r
 

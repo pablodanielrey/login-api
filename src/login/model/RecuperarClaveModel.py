@@ -18,13 +18,14 @@ from .MailsModel import MailsModel
 class RecuperarClaveModel:
 
     verify = bool(int(os.environ.get('VERIFY_SSL', 0)))
-    INTERNAL_DOMAINS= os.environ['INTERNAL_DOMAINS'].split(',')
+    INTERNAL_DOMAINS = os.environ['INTERNAL_DOMAINS'].split(',')
     OIDC_URL = os.environ['OIDC_URL']
     OIDC_ADMIN_URL = os.environ['OIDC_ADMIN_URL']
     client_id = os.environ['OIDC_CLIENT_ID']
     client_secret = os.environ['OIDC_CLIENT_SECRET']
     REDIS_HOST = os.environ.get('REDIS_HOST','127.0.0.1')
     REDIS_PORT = int(os.environ.get('REDIS_PORT',6379))
+    RESET_CLAVE_FROM = os.environ.get('RESET_CLAVE_FROM','')
     
     USERS_API_URL = os.environ['USERS_API_URL']
 
@@ -89,8 +90,6 @@ class RecuperarClaveModel:
             except Exception as e:
                 logging.exception(e)
         return None
-
-
 
     @classmethod
     def _obtener_usuario_por_uid(cls, uid, token=None):
@@ -174,15 +173,10 @@ class RecuperarClaveModel:
         return str(uuid.uuid4())[:8]
 
     @classmethod
-    def _enviar_codigo_template(cls, codigo, correo):
+    def _enviar_codigo_template(cls, usuario, codigo, correo):
         templ = MailsModel.obtener_template('codigo.tmpl')
-        usuario = {
-            'nombre':'prueba',
-            'apellido':'app',
-            'dni':'213324'
-        }
         text = templ.render(usuario=usuario, codigo=codigo)
-        r = MailsModel.enviar_correo('sistemas@econo.unlp.edu.ar',correo,'Reseteo de Clave FCE', text)
+        r = MailsModel.enviar_correo(cls.RESET_CLAVE_FROM,correo,'Reseteo de Clave FCE', text)
         if r.ok:
             logging.debug('correo enviado correctamente')
         else:
@@ -198,6 +192,11 @@ class RecuperarClaveModel:
         if correo not in mail['email'].lower().strip():
             return None
 
+        uid = mail['usuario_id']
+        usuario = cls._obtener_usuario_por_uid(uid)
+        if not usuario:
+            return None
+
         codigo = None
         intentos = session.query(ResetClave).filter(ResetClave.correo == correo, ResetClave.confirmado == None).all()
         for rc in intentos:
@@ -210,11 +209,11 @@ class RecuperarClaveModel:
         rc = ResetClave()
         rc.codigo = codigo
         rc.correo = correo
-        rc.usuario_id = mail['usuario_id']
+        rc.usuario_id = uid
         rc.id = rid
         session.add(rc)
 
-        cls._enviar_codigo_template(codigo, correo)
+        cls._enviar_codigo_template(usuario, codigo, correo)
 
         return rid
 
@@ -222,20 +221,29 @@ class RecuperarClaveModel:
     def _generar_clave(cls):
         return str(uuid.uuid4())[:8]
 
+
     @classmethod
-    def _cambiar_clave(cls, session, uid, clave, es_temporal=True):
+    def _enviar_clave_template(cls, usuario, clave, correo):
+        templ = MailsModel.obtener_template('clave_temporal.tmpl')
+        text = templ.render(usuario=usuario, clave=clave)
+        r = MailsModel.enviar_correo(cls.RESET_CLAVE_FROM,correo,'Reseteo de Clave FCE', text)
+        if r.ok:
+            logging.debug('correo enviado correctamente')
+        else:
+            logging.debug('error enviando correo')
 
-        usr = cls._obtener_usuario_por_uid(uid)
-        if not usr:
-            raise Exception('no se pudo obtener el usuario')
+    @classmethod
+    def _cambiar_clave(cls, session, usuario, clave, es_temporal=True):
 
+        uid = usuario['id']
+        dni = usuario['dni']
         cs = session.query(UsuarioClave).filter(UsuarioClave.usuario_id == uid).all()
         for c in cs:
             c.eliminada = datetime.datetime.now()
         
         uc = UsuarioClave()
         uc.usuario_id = uid
-        uc.usuario = usr['dni']
+        uc.usuario = dni
         uc.clave = clave
         uc.debe_cambiarla = es_temporal
         if es_temporal:
@@ -248,20 +256,34 @@ class RecuperarClaveModel:
         assert iid is not None
         assert codigo is not None
 
-        rc = session.query(ResetClave).filter(ResetClave.id == iid).one_or_none()
+        rc = session.query(ResetClave).filter(ResetClave.id == iid, ResetClave.codigo == codigo).one_or_none()
         if not rc:
             return None
 
-        if rc.codigo == codigo:
-            clave = cls._generar_clave()
-            
-            uid = rc.usuario_id
-            cls._cambiar_clave(session, uid, clave, es_temporal=True)
+        uid = rc.usuario_id
+        correo = rc.correo
 
-            rc.confirmado = datetime.datetime.now()
-            rc.actualizado = datetime.datetime.now()
+        usuario = cls._obtener_usuario_por_uid(uid)
+        if not usuario:
+            raise Exception('no se pudo obtener el usuario')
+
+        confirmado = datetime.datetime.now()
+        actualizado = datetime.datetime.now()
+        clave = cls._generar_clave()
+        
+        cls._cambiar_clave(session, usuario, clave, es_temporal=True)
+
+        rcs = session.query(ResetClave).filter(ResetClave.codigo == codigo, ResetClave.correo == correo).all()
+        for rc in rcs:
+            rc.actualizado = actualizado
+            rc.confirmado = confirmado
             rc.clave = clave
 
-            return clave
+        session.commit()
 
-        return None
+        try:
+            cls._enviar_clave_template(usuario, clave, correo)
+        except Exception as e:
+            logging.exception(e)
+
+        return clave

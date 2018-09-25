@@ -247,8 +247,8 @@ def verificar_codigo(iid):
     assert 'codigo' in data
 
     with obtener_session(False) as s:
+        """ el commit se hace interno al método para enviar el correo ahi """
         c = RecuperarClaveModel.verificar_codigo(s, iid, data['codigo'])
-        s.commit()
         r = None
         if not c:
             r = {
