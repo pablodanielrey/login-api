@@ -6,6 +6,7 @@ class ResetClave(Base):
 
     __tablename__ = 'reset_clave'
 
+    usuario_id = Column(String)
     correo = Column(String)
     codigo = Column(String)
     confirmado = Column(DateTime, nullable=True)

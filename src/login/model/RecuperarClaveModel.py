@@ -13,6 +13,7 @@ from oidc.oidc import ClientCredentialsGrant
 
 from .entities import UsuarioClave, ResetClave
 from .HydraModel import HydraModel
+from .MailsModel import MailsModel
 
 class RecuperarClaveModel:
 
@@ -174,7 +175,18 @@ class RecuperarClaveModel:
 
     @classmethod
     def _enviar_codigo_template(cls, codigo, correo):
-        pass
+        templ = MailsModel.obtener_template('codigo.tmpl')
+        usuario = {
+            'nombre':'prueba',
+            'apellido':'app',
+            'dni':'213324'
+        }
+        text = templ.render(usuario=usuario, codigo=codigo)
+        r = MailsModel.enviar_correo('sistemas@econo.unlp.edu.ar',correo,'Reseteo de Clave FCE', text)
+        if r.ok:
+            logging.debug('correo enviado correctamente')
+        else:
+            logging.debug('error enviando correo')
 
     @classmethod
     def enviar_codigo(cls, session, eid, correo):
@@ -198,6 +210,7 @@ class RecuperarClaveModel:
         rc = ResetClave()
         rc.codigo = codigo
         rc.correo = correo
+        rc.usuario_id = mail['usuario_id']
         rc.id = rid
         session.add(rc)
 
@@ -210,6 +223,27 @@ class RecuperarClaveModel:
         return str(uuid.uuid4())[:8]
 
     @classmethod
+    def _cambiar_clave(cls, session, uid, clave, es_temporal=True):
+
+        usr = cls._obtener_usuario_por_uid(uid)
+        if not usr:
+            raise Exception('no se pudo obtener el usuario')
+
+        cs = session.query(UsuarioClave).filter(UsuarioClave.usuario_id == uid).all()
+        for c in cs:
+            c.eliminada = datetime.datetime.now()
+        
+        uc = UsuarioClave()
+        uc.usuario_id = uid
+        uc.usuario = usr['dni']
+        uc.clave = clave
+        uc.debe_cambiarla = es_temporal
+        if es_temporal:
+            uc.expiracion = datetime.datetime.now() + datetime.timedelta(days=5)
+        session.add(uc)
+
+
+    @classmethod
     def verificar_codigo(cls, session, iid, codigo):
         assert iid is not None
         assert codigo is not None
@@ -220,9 +254,14 @@ class RecuperarClaveModel:
 
         if rc.codigo == codigo:
             clave = cls._generar_clave()
+            
+            uid = rc.usuario_id
+            cls._cambiar_clave(session, uid, clave, es_temporal=True)
+
             rc.confirmado = datetime.datetime.now()
             rc.actualizado = datetime.datetime.now()
             rc.clave = clave
+
             return clave
 
         return None

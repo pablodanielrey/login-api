@@ -3,6 +3,8 @@ import os
 import datetime
 import hashlib
 
+from sqlalchemy import or_, and_
+
 import oidc
 from oidc.oidc import ClientCredentialsGrant
 
@@ -52,8 +54,16 @@ class LoginModel:
 
     @classmethod
     def login(cls, session, usuario, clave, challenge):
-        c = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave).one_or_none()
+
+        ahora = datetime.datetime.now()
+
+        q = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave, UsuarioClave.eliminada == None)
+        q = q.filter(or_(UsuarioClave.expiracion == None, UsuarioClave.expiracion <= ahora))
+        c = q.one_or_none()
         if not c:
+            """
+            #TODO: hace falta chequear el debe cambiarla para loguearlo y redirigirlo a usuarios.
+            """
             r = cls.denegar_login_challenge(challenge, error='unknown_user', descripcion='Usuario o clave incorrectos')
         else:
             r = cls.aceptar_login_challenge(challenge, uid=c.usuario_id)

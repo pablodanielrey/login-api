@@ -17,6 +17,9 @@
 		},
 		{
 			"path": "/src/github/warden-api"
+		},
+		{
+			"path": "/src/gitlab/stack-presi"
 		}
 	],
 	"settings": {
