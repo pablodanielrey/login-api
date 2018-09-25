@@ -38,6 +38,8 @@ class RecuperarClaveModel:
 
     @classmethod
     def _obtener_usuario_api(cls, url, token=None):
+        if not token:
+            token = cls._obtener_token()
         headers = {
             'Authorization': 'Bearer {}'.format(token)
         }        
@@ -52,13 +54,32 @@ class RecuperarClaveModel:
 
     @classmethod
     def _setear_usuario_cache(cls, usr):
+        expire = 60 * 5
         uid = usr['id']
+        kmails = 'r_usuario_mails_{}'.format(uid)
+        cls.redis.delete(kmails)
         for m in usr['mails']:
             mid = m['id']
-            cls.redis.hmset('r_mail_{}'.format(mid), m)
-            cls.redis.sadd('r_usuario_mails_{}'.format(uid), mid)
-        cls.redis.hmset('r_usuario_uid_{}'.format(uid), usr)
-        cls.redis.hset('r_usuario_dni_{}'.format(usr['dni'].lower().replace(' ','')), 'uid', uid)
+            k = 'r_mail_{}'.format(mid)
+            cls.redis.hmset(k, m)
+            cls.redis.expire(k, expire * 2)
+            cls.redis.sadd(kmails, mid)
+        cls.redis.expire(kmails, expire * 2)
+
+        k = 'r_usuario_uid_{}'.format(uid)
+        cls.redis.hmset(k, usr)
+        cls.redis.expire(k, expire)
+
+        k = 'r_usuario_dni_{}'.format(usr['dni'].lower().replace(' ',''))
+        cls.redis.hset(k, 'uid', uid)
+        cls.redis.expire(k, expire)
+
+    @classmethod
+    def _eliminar_usuario_de_cache(cls, uid):
+        k = 'r_usuario_mails_{}'.format(uid)
+        cls.redis.delete(k)
+        k = 'r_usuario_uid_{}'.format(uid)
+        cls.redis.delete(k)
 
     @classmethod
     def _format_mail_from_redis(cls, m):
@@ -283,6 +304,11 @@ class RecuperarClaveModel:
 
         try:
             cls._enviar_clave_template(usuario, clave, correo)
+        except Exception as e:
+            logging.exception(e)
+
+        try:
+            cls._eliminar_usuario_de_cache(uid)
         except Exception as e:
             logging.exception(e)
 
