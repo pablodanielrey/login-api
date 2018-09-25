@@ -204,3 +204,25 @@ class RecuperarClaveModel:
         cls._enviar_codigo_template(codigo, correo)
 
         return rid
+
+    @classmethod
+    def _generar_clave(cls):
+        return str(uuid.uuid4())[:8]
+
+    @classmethod
+    def verificar_codigo(cls, session, iid, codigo):
+        assert iid is not None
+        assert codigo is not None
+
+        rc = session.query(ResetClave).filter(ResetClave.id == iid).one_or_none()
+        if not rc:
+            return None
+
+        if rc.codigo == codigo:
+            clave = cls._generar_clave()
+            rc.confirmado = datetime.datetime.now()
+            rc.actualizado = datetime.datetime.now()
+            rc.clave = clave
+            return clave
+
+        return None

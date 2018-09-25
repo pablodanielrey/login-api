@@ -9,5 +9,4 @@ class ResetClave(Base):
     correo = Column(String)
     codigo = Column(String)
     confirmado = Column(DateTime, nullable=True)
-    
-    
+    clave = Column(String)

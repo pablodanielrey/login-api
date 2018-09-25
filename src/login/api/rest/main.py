@@ -238,6 +238,30 @@ def enviar_codigo(eid):
             }
         return r              
 
+
+@app.route(RC_BASE + '/verificar_codigo/<iid>', methods=['POST'])
+@jsonapi
+def verificar_codigo(iid):
+    assert iid is not None
+    data = request.get_json()
+    assert 'codigo' in data
+
+    with obtener_session(False) as s:
+        c = RecuperarClaveModel.verificar_codigo(s, iid, data['codigo'])
+        s.commit()
+        r = None
+        if not c:
+            r = {
+                'ok': False,
+                'error': {'error':'200', 'descripcion':'código incorrecto'}
+            }
+        else:
+            r = {
+                'ok':True,
+                'clave':c
+            }
+        return r 
+
 """
 @app.route(API_BASE + '/login/<challenge>', methods=['GET'])
 @jsonapi
