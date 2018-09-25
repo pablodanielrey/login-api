@@ -48,6 +48,8 @@ class RecuperarClaveModel:
             logging.debug(r)
             raise Exception('error obteniendo usuario')
         usr = r.json()
+        if not usr:
+            return None
         assert 'id' in usr
         cls._setear_usuario_cache(usr)
         return usr
@@ -157,6 +159,8 @@ class RecuperarClaveModel:
     @classmethod
     def verificar_dni(cls, dni):
         usr = cls._obtener_usuario_por_dni(dni)
+        if not usr:
+            return None
         c = cls._obtener_correo_alternativo(usr)
         if c:
             return {'tiene_correo':True, 'usuario':usr}
@@ -166,6 +170,8 @@ class RecuperarClaveModel:
     @classmethod
     def obtener_correo(cls, uid):
         usr = cls._obtener_usuario_por_uid(uid)
+        if not usr:
+            raise Exception('No existe ese usuario')
         correo = cls._obtener_correo_alternativo(usr)
         if not correo:
             raise Exception('No tiene correo alternativo')
