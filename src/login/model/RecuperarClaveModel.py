@@ -319,3 +319,10 @@ class RecuperarClaveModel:
             logging.exception(e)
 
         return clave
+
+    @classmethod
+    def cambiar_clave(cls, session, uid, clave, es_temporal=False):
+        usuario = cls._obtener_usuario_por_uid(uid)
+        if not usuario:
+            raise Exception('no se pudo obtener el usuario')
+        cls._cambiar_clave(session, usuario, clave, es_temporal)

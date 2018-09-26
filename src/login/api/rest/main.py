@@ -38,50 +38,7 @@ register_encoder(app)
 
 API_BASE = os.environ['API_BASE']
 
-@app.route(API_BASE + '/acceso_modulos', methods=['GET'])
-@warden.require_valid_token
-@jsonapi
-def obtener_acceso_modulos(token=None):
 
-    prof = warden.has_one_profile(token, ['assistance-super-admin'])
-    if prof and prof['profile'] == True:
-        a = [
-            'super-admin'
-        ]
-        return json.dumps(a)
-
-    prof = warden.has_one_profile(token, ['assistance-admin'])
-    if prof and prof['profile'] == True:
-        a = [
-            'inicio_personal',
-            'reporte_personal',
-            'reporte_general',
-            'reporte_detalles_avanzados',
-            'justificacion_personal',
-            'justificacion_general',
-            'justificacion_tipo_abm',
-            'horario_vista',
-            'horario_abm'
-        ]
-        return json.dumps(a)
-    
-    prof = warden.has_one_profile(token, ['assistance-operator'])
-    if prof and prof['profile'] == True:
-        a = [
-            'inicio_personal',
-            'reporte_personal',
-            'reporte_general',
-            'reporte_detalles_avanzados',
-            'justificacion_personal',
-            'justificacion_general',
-            'horario_vista'
-        ]
-        return json.dumps(a)
-
-    a = [
-        'inicio_personal'
-    ]
-    return json.dumps(a)            
 
 @app.route(API_BASE + '/init_login_flow/<challenge>', methods=['GET'])
 @jsonapi
@@ -117,7 +74,6 @@ def init_consent_flow(challenge):
         return ('invalid', 401)
     return LoginModel.init_consent_flow(challenge)
 
-
 """
     métodos dedicados al manejo de sesion
 """
@@ -129,16 +85,58 @@ def logout(id_token, client_id):
     
     return {'status_code':200}
 
-@app.route(API_BASE + '/usuario/<uid>/generar_clave', methods=['GET'])
+
+@app.route(API_BASE + '/usuario/<uid>/clave', methods=['POST'])
 @warden.require_valid_token
 @jsonapi
-def usuario_generar_clave(uid, token):
+def usuario_cambiar_clave(uid, token):
     if not uid:
         return ('invalid', 401)
+
+    data = request.get_json()
+    clave = data['clave']
+
+    prof = warden.has_one_profile(token, ['login-super-admin','users-super-admin'])
+    if not prof or not prof['profile']: 
+        """ chequeo que solo pueda modificar su propia clave. """
+        propio_uid = token['sub']
+        if uid != propio_uid:
+            return ('invalid', 401)
+
+    with obtener_session() as s:
+        RecuperarClaveModel.cambiar_clave(s, uid, clave, es_temporal=False)
+        s.commit()
+        return {'uid':uid, 'clave':clave}
+
+
+@app.route(API_BASE + '/acceso_modulos', methods=['GET'])
+@warden.require_valid_token
+@jsonapi
+def obtener_acceso_modulos(token=None):
+
+    prof = warden.has_one_profile(token, ['login-super-admin'])
+    if prof and prof['profile'] == True:
+        a = [
+            'super-admin'
+        ]
+        return json.dumps(a)
+
+    prof = warden.has_one_profile(token, ['login-admin'])
+    if prof and prof['profile'] == True:
+        a = [
+            'inicio_personal',
+            'reporte_personal',
+            'reporte_general',
+            'reporte_detalles_avanzados',
+            'justificacion_personal',
+            'justificacion_general',
+            'justificacion_tipo_abm',
+            'horario_vista',
+            'horario_abm'
+        ]
+        return json.dumps(a)
     
-    return {'uid':'', 'clave':''}
-
-
+    return {}
 
 """
     los siguientes son métodos de la interface de hydra.
