@@ -8,6 +8,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 import sys
 import os
 from dateutil import parser
+import uuid
 
 from werkzeug.contrib.fixers import ProxyFix
 
@@ -15,6 +16,7 @@ import flask
 from flask import Flask, Response, abort, make_response, jsonify, url_for, request, json, stream_with_context
 from flask_jsontools import jsonapi
 from dateutil import parser
+
 
 VERIFY_SSL = bool(int(os.environ.get('VERIFY_SSL',0)))
 OIDC_ADMIN_URL = os.environ['OIDC_ADMIN_URL']
@@ -107,6 +109,25 @@ def usuario_cambiar_clave(uid, token):
         RecuperarClaveModel.cambiar_clave(s, uid, clave, es_temporal=False)
         s.commit()
         return {'uid':uid, 'clave':clave}
+
+@app.route(API_BASE + '/usuario/<uid>/generar_clave', methods=['GET'])
+@warden.require_valid_token
+@jsonapi
+def usuario_generar_clave(uid, token):
+    if not uid:
+        return ('invalid', 401)
+
+    prof = warden.has_one_profile(token, ['login-super-admin','users-super-admin','users-admin'])
+    if not prof or not prof['profile']:
+        return ('invalid',401) 
+
+    with obtener_session() as s:
+        clave = str(uuid.uuid4())[:5]
+        RecuperarClaveModel.cambiar_clave(s, uid, clave, es_temporal=True)
+        s.commit()
+        return {'uid':uid, 'clave':clave}
+
+
 
 
 @app.route(API_BASE + '/acceso_modulos', methods=['GET'])
