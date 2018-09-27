@@ -8,6 +8,8 @@ import redis
 import json
 import uuid
 
+from sqlalchemy import or_
+
 import oidc
 from oidc.oidc import ClientCredentialsGrant
 
@@ -272,9 +274,13 @@ class RecuperarClaveModel:
         uc.usuario_id = uid
         uc.usuario = dni
         uc.clave = clave
+        uc.dirty = True
         uc.debe_cambiarla = es_temporal
         if es_temporal:
             uc.expiracion = datetime.datetime.now() + datetime.timedelta(days=5)
+        else:
+            ''' a google solo se sincronizan las claves que no son temporales '''
+            uc.google = True
         session.add(uc)
 
 
@@ -326,3 +332,17 @@ class RecuperarClaveModel:
         if not usuario:
             raise Exception('no se pudo obtener el usuario')
         cls._cambiar_clave(session, usuario, clave, es_temporal)
+
+
+    @classmethod
+    def precondiciones(cls, session, uid):
+        ''' por ahora solo chequeo que no tenga clave temporal '''
+        ahora = datetime.datetime.now()
+        q = session.query(UsuarioClave).filter(UsuarioClave.usuario_id == uid, UsuarioClave.eliminada == None)
+        #existe un problema con la zona horaria de la fecha por lo que siempre da expirada. asi que por ahora lo comento
+        #q.filter(or_(UsuarioClave.debe_cambiarla == True, UsuarioClave.expiracion <= ahora))
+        q = q.filter(UsuarioClave.debe_cambiarla == True)
+        claves_temporales = q.count()
+        return {
+            'clave': claves_temporales <= 0
+        }

@@ -12,3 +12,5 @@ class UsuarioClave(Base):
     expiracion = Column(DateTime)
     eliminada = Column(DateTime)
     debe_cambiarla = Column(Boolean, default=False)
+    dirty = Column(Boolean)
+    google = Column(Boolean)

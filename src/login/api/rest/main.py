@@ -260,6 +260,44 @@ def verificar_codigo(iid):
             }
         return r 
 
+
+
+
+"""
+    ////////////////////////////////////////////////////////////////
+    //////////////////////// PRECONDICIONES ////////////////////////
+    ////////////////////////////////////////////////////////////////
+"""
+
+@app.route(API_BASE + '/precondiciones', methods=['GET'])
+@warden.require_valid_token
+@jsonapi
+def chequear_precondiciones_usuario(token=None):
+    uid = token['sub']
+    assert uid is not None
+    with obtener_session() as s:
+        return RecuperarClaveModel.precondiciones(s,uid)
+
+@app.route(API_BASE + '/usuario/<uid>/precondiciones', methods=['GET'])
+@warden.require_valid_token
+@jsonapi
+def chequear_precondiciones_de_usuario(uid, token=None):
+    assert uid is not None
+    prof = warden.has_one_profile(token, ['login-super-admin'])
+    if not prof['profile']:
+        return ('no tiene los permisos suficientes', 403)
+
+    with obtener_session() as s:
+        return RecuperarClaveModel.precondiciones(s,uid)
+
+
+
+
+
+
+
+
+
 """
 @app.route(API_BASE + '/login/<challenge>', methods=['GET'])
 @jsonapi
