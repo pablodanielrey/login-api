@@ -333,6 +333,16 @@ class RecuperarClaveModel:
             raise Exception('no se pudo obtener el usuario')
         cls._cambiar_clave(session, usuario, clave, es_temporal)
 
+    @classmethod
+    def recuperar_cambiar_clave(cls, session, cid, clave):
+        """
+            Para permitir varios tipos de flujos, el verificar código genera una clave temporal
+            y este método permite cambiar la clave temporal por una fija, si es que como cid se pasa la temporal.
+        """
+        uc = session.query(UsuarioClave).filter(UsuarioClave.clave == cid).one()
+        uid = uc.usuario_id
+        cls.cambiar_clave(session, uid, clave, es_temporal=False)
+
 
     @classmethod
     def precondiciones(cls, session, uid):

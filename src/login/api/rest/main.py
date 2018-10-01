@@ -198,41 +198,41 @@ RC_BASE = API_BASE + '/recuperar_clave'
 @jsonapi
 def verificar_dni(dni):
     assert dni is not None
-    with obtener_session(False) as s:
-        u = RecuperarClaveModel.verificar_dni(dni)
-        r = None
-        if not u:
-            r = {
-                'ok': False,
-                'error': {'error':'200', 'descripcion':'No existe ese dni'}
-            }
-        else:
-            r = {
-                'ok':True,
-                'tiene_correo': u['tiene_correo'],
-                'usuario': u['usuario']
-            }
-        return r
+    #with obtener_session(False) as s:
+    u = RecuperarClaveModel.verificar_dni(dni)
+    r = None
+    if not u:
+        r = {
+            'ok': False,
+            'error': {'error':'200', 'descripcion':'No existe ese dni'}
+        }
+    else:
+        r = {
+            'ok':True,
+            'tiene_correo': u['tiene_correo'],
+            'usuario': u['usuario']
+        }
+    return r
 
 @app.route(RC_BASE + '/obtener_correo/<uid>', methods=['GET'])
 @jsonapi
 def obtener_correo(uid):
     assert uid is not None
-    with obtener_session(False) as s:
-        c = RecuperarClaveModel.obtener_correo(uid)
-        r = None
-        if not c:
-            r = {
-                'ok': False,
-                'error': {'error':'200', 'descripcion':'no se pudo obtener la información de correo'}
-            }
-        else:
-            r = {
-                'ok':True,
-                'correo': c['correo'],
-                'usuario': c['usuario']
-            }
-        return r
+    #with obtener_session(False) as s:
+    c = RecuperarClaveModel.obtener_correo(uid)
+    r = None
+    if not c:
+        r = {
+            'ok': False,
+            'error': {'error':'200', 'descripcion':'no se pudo obtener la información de correo'}
+        }
+    else:
+        r = {
+            'ok':True,
+            'correo': c['correo'],
+            'usuario': c['usuario']
+        }
+    return r
 
 @app.route(RC_BASE + '/enviar_codigo/<eid>', methods=['POST'])
 @jsonapi
@@ -268,6 +268,7 @@ def verificar_codigo(iid):
     with obtener_session(False) as s:
         """ el commit se hace interno al método para enviar el correo ahi """
         c = RecuperarClaveModel.verificar_codigo(s, iid, data['codigo'])
+        s.commit()
         r = None
         if not c:
             r = {
@@ -281,7 +282,20 @@ def verificar_codigo(iid):
             }
         return r 
 
+@app.route(RC_BASE + '/clave/<cid>', methods=['POST'])
+@jsonapi
+def recuperar_cambiar_clave(cid):
+    if not cid:
+        return ('invalid', 401)
 
+    data = request.get_json()
+    assert 'calve' in data and data['clave'] != None
+    clave = data['clave']
+
+    with obtener_session(False) as s:
+        RecuperarClaveModel.recuperar_cambiar_clave(s, cid, clave)
+        s.commit()
+        return {'clave':clave}
 
 
 """
