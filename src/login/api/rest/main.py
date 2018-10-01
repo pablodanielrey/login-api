@@ -289,7 +289,7 @@ def recuperar_cambiar_clave(cid):
         return ('invalid', 401)
 
     data = request.get_json()
-    assert 'calve' in data and data['clave'] != None
+    assert 'clave' in data and data['clave'] != None
     clave = data['clave']
 
     with obtener_session(False) as s:
