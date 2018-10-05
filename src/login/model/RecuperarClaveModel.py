@@ -16,6 +16,7 @@ from oidc.oidc import ClientCredentialsGrant
 from .entities import UsuarioClave, ResetClave
 from .HydraModel import HydraModel
 from .MailsModel import MailsModel
+from .google.GoogleModel import GoogleModel
 
 class RecuperarClaveModel:
 
@@ -282,6 +283,11 @@ class RecuperarClaveModel:
             ''' a google solo se sincronizan las claves que no son temporales '''
             uc.google = True
         session.add(uc)
+
+        try:
+            GoogleModel.sincronizar_dirty(session)
+        except Exception as e:
+            logging.exception(e)
 
 
     @classmethod
