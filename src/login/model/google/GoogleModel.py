@@ -8,6 +8,7 @@ import datetime
 import uuid
 import logging
 import redis
+import json
 
 from login.model.entities import UsuarioClave, ResetClave, ErrorGoogle, RespuestaGoogle
 from .GoogleAuthApi import GAuthApis
@@ -71,7 +72,7 @@ class GoogleModel:
 
             rg = RespuestaGoogle()
             rg.usuario_id = uc.usuario_id
-            rg.respuesta = r
+            rg.respuesta = json.dumps(r)
             session.add(rg)
 
         except Exception as e:
