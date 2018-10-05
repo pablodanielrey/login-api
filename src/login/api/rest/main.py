@@ -326,42 +326,39 @@ def chequear_precondiciones_de_usuario(uid, token=None):
         return RecuperarClaveModel.precondiciones(s,uid)
 
 
-
-
-
-
-
-
-
 """
-@app.route(API_BASE + '/login/<challenge>', methods=['GET'])
-@jsonapi
-def get_login_challenge(challenge):
-    if not challenge:
-        return ('invalid', 401)
-    return LoginModel.obtener_login_challenge(challenge)
-
-@app.route(API_BASE + '/login/<challenge>/accept', methods=['PUT'])
-@jsonapi
-def accept_login_challenge(challenge):
-    if not challenge:
-        return ('invalid', 401)
-    return LoginModel.aceptar_login_challenge(challenge)
-
-@app.route(API_BASE + '/consent/<challenge>', methods=['GET'])
-@jsonapi
-def get_consent_challenge(challenge):
-    if not challenge:
-        return ('invalid', 401)
-    return LoginModel.obtener_consent_challenge(challenge)
-
-@app.route(API_BASE + '/consent/<challenge>/accept', methods=['PUT'])
-@jsonapi
-def accept_consent_challenge(challenge):
-    if not challenge:
-        return ('invalid', 401)
-    return LoginModel.aceptar_consent_challenge(challenge)
+    //////////////////////////////////////////////////////////
+    ///////////////////// SINC GOOGLE ////////////////////////
+    //////////////////////////////////////////////////////////
 """
+
+from login.model.google.GoogleModel import GoogleModel
+
+@app.route(API_BASE + '/usuarios/<uid>/sincronizar_google', methods=['GET'])
+#@warden.require_valid_token
+@jsonapi
+def sincronizar_usuario(uid, token=None):
+
+    with obtener_session() as session:
+        r = GoogleModel.sincronizar(session, uid)
+        session.commit()
+        return r
+
+@app.route(API_BASE + '/usuarios/sincronizar_google', methods=['GET'])
+#@warden.require_valid_token
+@jsonapi
+def sincronizar_usuarios(token=None):
+
+    with obtener_session() as session:
+        r = GoogleModel.sincronizar_dirty(session)
+        session.commit()
+        return r
+
+
+
+
+
+
 
 
 @app.route(API_BASE + '*', methods=['OPTIONS'])
