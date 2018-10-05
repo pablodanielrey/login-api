@@ -88,7 +88,9 @@ class GoogleModel:
     @classmethod
     def sincronizar(cls, session, uid):
         assert uid is not None
-        u = session.query(UsuarioClave).filter(UsuarioClave.usuario_id == uid).one()
+        u = session.query(UsuarioClave).filter(UsuarioClave.usuario_id == uid, UsuarioClave.eliminada == None).order_by(UsuarioClave.creado.desc()).limit(1).one_or_none()
+        if not u:
+            return {'uid':uid, 'descripcion':'no existe'}
         return cls._sincronizar(session, u)
 
     @classmethod
