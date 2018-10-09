@@ -179,3 +179,16 @@ class HydraModel:
             logging.debug(r)
             raise Exception(r.status_code)
         return r.text
+
+    def obtener_cliente(self, client_id):
+        url = '{}/clients/{}'.format(self.host, client_id)
+        h = {
+            'X-Forwarded-Proto':'https',
+            'Content-Type': 'application/json'
+        }
+        r = requests.get(url, headers=h, verify=self.verify)
+        if not r.ok:
+            logging.debug(r)
+            raise Exception(r.status_code)
+        response = r.json()
+        return response

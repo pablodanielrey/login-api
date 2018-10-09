@@ -80,12 +80,13 @@ def init_consent_flow(challenge):
     métodos dedicados al manejo de sesion
 """
 @app.route(API_BASE + '/logout', methods=['POST'])
-@warden.require_valid_token
 @jsonapi
+@warden.require_valid_token
 def logout(token=None):
     ''' desloguea al usuario dueño del token que realiza la llamada '''
     uid = token['sub']
-    return _internal_logout(uid)
+    data = request.get_json()
+    return _internal_logout(data['app_id'], uid)
 
 @app.route(API_BASE + '/logout/<uid>', methods=['POST'])
 @warden.require_valid_token
@@ -100,11 +101,12 @@ def logout_uid(uid, token=None):
         if uid != propio_uid:
             return ('no tiene permisos suficientes', 401)
 
-    return _internal_logout(uid)
+    data = request.get_json()
+    return _internal_logout(data['app_id'],uid)
 
-def _internal_logout(uid):
-    r = LoginModel.logout_hydra(uid)
-    return {'status_code':200, 'response':r}
+def _internal_logout(client_id, uid):
+    r = LoginModel.logout_hydra(client_id, uid)
+    return r
    
 
 

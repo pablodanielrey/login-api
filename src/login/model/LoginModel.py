@@ -136,8 +136,15 @@ class LoginModel:
     """
 
     @classmethod
-    def logout_hydra(cls, uid):
-        return cls.hydra.eliminar_sesion_login_usuario(uid)
+    def logout_hydra(cls, client_id, uid):
+        c = cls.hydra.obtener_cliente(client_id)
+        ''' https://www.ory.sh/docs/api/hydra/?version=latest '''
+        url = c['client_uri']
+        r = {
+            'redirect_to': url
+        }        
+        cls.hydra.eliminar_sesion_login_usuario(uid)
+        return r
 
     @classmethod
     def obtener_sesiones_usuario(cls, uid):
