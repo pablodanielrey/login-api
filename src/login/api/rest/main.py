@@ -79,13 +79,14 @@ def init_consent_flow(challenge):
 """
     métodos dedicados al manejo de sesion
 """
-@app.route(API_BASE + '/logout/<id_token>/<client_id>', methods=['GET'])
+@app.route(API_BASE + '/logout', methods=['POST'])
+@warden.require_valid_token
 @jsonapi
-def logout(id_token, client_id):
-    if not id_token or not client_id:
-        return ('invalid', 401)
-    
-    return {'status_code':200}
+def logout(token=None):
+    uid = token['sub']
+    assert uid != None
+    r = LoginModel.logout_hydra(uid)
+    return {'status_code':200, 'response':r}
 
 
 @app.route(API_BASE + '/usuario/<uid>/clave', methods=['POST'])

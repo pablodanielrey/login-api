@@ -136,6 +136,10 @@ class LoginModel:
     """
 
     @classmethod
+    def logout_hydra(cls, uid):
+        return cls.hydra.eliminar_sesion_login_usuario(uid)
+
+    @classmethod
     def obtener_sesiones_usuario(cls, uid):
         return cls.hydra.obtener_consent_sesiones(uid)
 

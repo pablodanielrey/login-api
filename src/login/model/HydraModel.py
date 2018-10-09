@@ -178,3 +178,4 @@ class HydraModel:
         if not r.ok:
             logging.debug(r)
             raise Exception(r.status_code)
+        return r.text
