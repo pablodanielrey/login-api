@@ -283,6 +283,7 @@ class RecuperarClaveModel:
             ''' a google solo se sincronizan las claves que no son temporales '''
             uc.google = True
         session.add(uc)
+        session.commit()
 
         try:
             GoogleModel.sincronizar_dirty(session)
