@@ -320,6 +320,15 @@ def recuperar_cambiar_clave(cid):
         return {'clave':clave}
 
 
+@app.route(RC_BASE + '/detalle', methods=['GET'])
+@warden.require_valid_token
+@jsonapi
+def detalle_recuperar_clave(token=None):
+    with obtener_session(False) as s:
+        rcs = RecuperarClaveModel.detalle_recuperar_clave(s)
+        return rcs 
+
+
 """
     ////////////////////////////////////////////////////////////////
     //////////////////////// PRECONDICIONES ////////////////////////

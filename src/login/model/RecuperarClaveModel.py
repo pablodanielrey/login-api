@@ -248,6 +248,11 @@ class RecuperarClaveModel:
         return rid
 
     @classmethod
+    def detalle_recuperar_clave(cls, session):
+        rc = session.query(ResetClave).all()
+        return rc
+
+    @classmethod
     def _generar_clave(cls):
         return str(uuid.uuid4())[:8]
 
