@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='login-api',
-          version='0.0.3.a2',
+          version='0.0.5a1',
           description='Proyecto que implementa la api de login',
           url='https://github.com/pablodanielrey/login-api',
           author='Desarrollo DiTeSi, FCE',
@@ -29,7 +29,7 @@ setup(name='login-api',
           install_requires=['psycopg2',
                             'dateutils>=0.6.6',
                             'requests',
-                            'redis',
+                            'redis==2.10.6',
                             'SQLAlchemy',
                             'httplib2',
                             'pyjwt',

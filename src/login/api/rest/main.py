@@ -376,9 +376,14 @@ def sincronizar_usuarios(token=None):
         session.commit()
         return r
 
+@app.route(API_BASE + '/usuarios/sincronizar_google/detalle', methods=['GET'])
+@warden.require_valid_token
+@jsonapi
+def sincronizar_usuarios_detalle(token=None):
 
-
-
+    with obtener_session() as session:
+        r = GoogleModel.sincronizar_usuarios_detalle(session)
+        return r
 
 
 
