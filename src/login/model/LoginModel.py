@@ -3,23 +3,34 @@ import os
 import datetime
 import hashlib
 import logging
+from dateutil.parser import parse
 
 from sqlalchemy import or_, and_
 
 import oidc
 from oidc.oidc import ClientCredentialsGrant
 
+from model_utils.API import API
+
 from .entities import UsuarioClave
 from .HydraModel import HydraModel
 
+CLIENT_ID = os.environ['OIDC_CLIENT_ID']
+CLIENT_SECRET = os.environ['OIDC_CLIENT_SECRET']
+OIDC_URL = os.environ['OIDC_URL']
+OIDC_ADMIN_URL = os.environ['OIDC_ADMIN_URL']
+VERIFY_SSL = bool(int(os.environ.get('VERIFY_SSL', 0)))
+USERS_API_URL = os.environ.get('USERS_API_URL')
+
 class LoginModel:
 
-    verify = bool(int(os.environ.get('VERIFY_SSL', 0)))
-    OIDC_URL = os.environ['OIDC_URL']
-    OIDC_ADMIN_URL = os.environ['OIDC_ADMIN_URL']
-    client_id = os.environ['OIDC_CLIENT_ID']
-    client_secret = os.environ['OIDC_CLIENT_SECRET']
+    verify = VERIFY_SSL
+    OIDC_URL = OIDC_URL
+    OIDC_ADMIN_URL = OIDC_ADMIN_URL
+    client_id = CLIENT_ID
+    client_secret = CLIENT_SECRET
 
+    api = API(url=OIDC_URL, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, verify_ssl=VERIFY_SSL)
     hydra = HydraModel(OIDC_ADMIN_URL, verify)
     grant = ClientCredentialsGrant(OIDC_URL, client_id, client_secret, verify=verify)
     
@@ -55,11 +66,7 @@ class LoginModel:
 
     @classmethod
     def login(cls, session, usuario, clave, challenge):
-
         ahora = datetime.datetime.now()
-        logging.info('FECHA ACTUAL')
-        logging.info(ahora)
-
         q = session.query(UsuarioClave).filter(UsuarioClave.usuario == usuario, UsuarioClave.clave == clave, UsuarioClave.eliminada == None)
         q = q.filter(or_(UsuarioClave.expiracion == None, UsuarioClave.expiracion > ahora))
         c = q.one_or_none()
@@ -115,16 +122,89 @@ class LoginModel:
             r = cls.aceptar_consent_challenge(challenge,cc)
         return r
 
+    """
+        https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+    """
     @classmethod
     def aceptar_consent_challenge(cls, challenge, cc=None, recordar=True, timeout=3600):
         if not cc:
             cc = cls.hydra.obtener_consent_challenge(challenge)
+
+
+        """
+            /////////////////
+            TODO: cambiar este hack horrible a la api de usuarios!!!
+            lo mejor a hacer es usar eventsourcing.
+        """
+        uid = cc['subject']
+        tk = cls.api._get_token()
+
+        def _get_user_uuid(api, uuid, token=None):
+            query = '{}/usuarios/{}'.format(USERS_API_URL, uuid)
+            r = api.get(query, token=token)
+            if not r.ok:
+                return None
+            usr = r.json()
+            if len(usr) > 0:
+                return usr[0]
+            return None
+
+        def _get_primary_email(usr):
+            mails = sorted([m for m in usr['mails'] if m['confirmado'] and not m['eliminado']], key=lambda m: m['email'])
+            if len(mails) > 0:
+                return mails[0]
+            return None
+
+        usr = _get_user_uuid(cls.api, uid, tk)
+        if not usr:
+            raise Exception('error obteniendo datos de usuario')
+
+        """
+            //////////////////////////
+        """
+
+        atk = {}
+        if 'profile' in cc['requested_scope']:
+           atk['name'] = usr['nombre']
+           atk['family_name'] = usr['apellido']
+           atk['given_name'] = usr['nombre']
+           atk['middle_name'] = usr['nombre'].split(' ')[1] if len(usr['nombre'].split(' ')) > 1 else ''
+           atk['nickname'] = ''
+           atk['preferred_username'] = usr['dni']
+           atk['profile'] = ''
+           atk['picture'] = ''
+           atk['website'] = ''
+           atk['gender'] = usr['genero']
+           atk['birthdate'] = usr['nacimiento']
+           atk['zoneinfo'] = 'America/Argentina/Buenos_Aires'
+           atk['locale'] = 'es-ES'
+           atk['updated_at'] = parse(usr['actualizado']).timestamp()
+
+        if 'email' in cc['requested_scope']:
+            em = _get_primary_email(usr)
+            if em:
+                atk['email'] = em['email']
+                atk['email_verified'] = True if em['confirmado'] else False
+
+        if 'address' in cc['requested_scope']:
+            atk['address'] = {
+                'street_address':usr['direccion'],
+                'locality':usr['ciudad'],
+                'country':usr['pais']
+            }
+
+        """
+        if 'phone' in cc['requested_scope']:
+            atk['phone_number'] = ''
+            atk['phone_number_verified'] = ''
+        """
+
         data = {
             'grant_scope': cc['requested_scope'],
             'remember': False if cc['skip'] else recordar,
             'remember_for': timeout,
             'session':{
-                'access_token':{},
+                'access_token':atk,
                 'id_token':{}
             }
         }            
