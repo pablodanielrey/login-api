@@ -165,20 +165,29 @@ class LoginModel:
 
         atk = {}
         if 'profile' in cc['requested_scope']:
-           atk['name'] = usr['nombre']
-           atk['family_name'] = usr['apellido']
-           atk['given_name'] = usr['nombre']
-           atk['middle_name'] = usr['nombre'].split(' ')[1] if len(usr['nombre'].split(' ')) > 1 else ''
-           atk['nickname'] = ''
-           atk['preferred_username'] = usr['dni']
-           atk['profile'] = ''
-           atk['picture'] = ''
-           atk['website'] = ''
-           atk['gender'] = usr['genero']
-           atk['birthdate'] = usr['nacimiento']
-           atk['zoneinfo'] = 'America/Argentina/Buenos_Aires'
-           atk['locale'] = 'es-ES'
-           atk['updated_at'] = parse(usr['actualizado']).timestamp()
+            atk['name'] = usr['nombre']
+            atk['family_name'] = usr['apellido']
+            atk['given_name'] = usr['nombre']
+            atk['middle_name'] = usr['nombre'].split(' ')[1] if len(usr['nombre'].split(' ')) > 1 else ''
+            atk['nickname'] = ''
+            atk['preferred_username'] = usr['dni']
+            atk['profile'] = ''
+            atk['picture'] = ''
+            atk['website'] = ''
+            atk['gender'] = usr['genero']
+            atk['birthdate'] = usr['nacimiento']
+            atk['zoneinfo'] = 'America/Argentina/Buenos_Aires'
+            atk['locale'] = 'es-ES'
+
+            updated_at = None
+            try:
+                updated_at = parse(usr['actualizado']).timestamp()
+            except Exception as ex:
+                try:
+                    updated_at = parse(usr['creado']).timestamp()
+                except Exception as exx:
+                    pass
+            atk['updated_at'] = updated_at
 
         if 'email' in cc['requested_scope']:
             em = _get_primary_email(usr)
