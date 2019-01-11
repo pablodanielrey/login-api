@@ -205,7 +205,7 @@ class LoginModel:
             'remember_for': timeout,
             'session':{
                 'access_token':atk,
-                'id_token':{}
+                'id_token':atk
             }
         }            
         return cls.hydra.aceptar_consent_challenge(challenge, data)
