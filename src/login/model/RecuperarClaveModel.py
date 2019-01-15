@@ -50,9 +50,10 @@ class RecuperarClaveModel:
         if not r.ok:
             logging.debug(r)
             raise Exception('error obteniendo usuario')
-        usr = r.json()
-        if not usr:
+        usrs = r.json()
+        if not usrs or len(usrs) <= 0:
             return None
+        usr = usrs[0]
         assert 'id' in usr
         cls._setear_usuario_cache(usr)
         return usr
@@ -290,10 +291,10 @@ class RecuperarClaveModel:
         session.add(uc)
         session.commit()
 
-        try:
-            GoogleModel.sincronizar_dirty(session)
-        except Exception as e:
-            logging.exception(e)
+        #try:
+        #    GoogleModel.sincronizar_dirty(session)
+        #except Exception as e:
+        #    logging.exception(e)
 
 
     @classmethod
