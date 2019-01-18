@@ -53,7 +53,12 @@ class RecuperarClaveModel:
         usrs = r.json()
         if not usrs or len(usrs) <= 0:
             return None
-        usr = usrs[0]
+        usr = None
+        try:
+            usr = usrs[0]
+        except KeyError as e:
+            usr = usrs
+        
         assert 'id' in usr
         cls._setear_usuario_cache(usr)
         return usr
