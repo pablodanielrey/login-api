@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='login-api',
-          version='0.1.1a2',
+          version='0.1.1a3',
           description='Proyecto que implementa la api de login',
           url='https://github.com/pablodanielrey/login-api',
           author='Desarrollo DiTeSi, FCE',
@@ -43,7 +43,8 @@ setup(name='login-api',
                             'warden-api',
                             'ptvsd',
                             'google-api-python-client',
-                            'oauth2client'],
+                            'oauth2client',
+                            'pyrad'],
           entry_points={
             'console_scripts': [
                 'rest=login.api.rest.main:main'
