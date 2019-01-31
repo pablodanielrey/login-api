@@ -25,9 +25,9 @@ if __name__ == '__main__':
     server = RadiusServer(loop=loop, dictionary=Dictionary('src/login/api/radius/dictionary'))
 
     # add clients (address, secret, name)
-    server.hosts["163.10.17.253"] = RemoteHost("163.10.17.253",
-                                           b"aps",
-                                           "163.10.17.253")
+    server.hosts["192.168.0.105"] = RemoteHost("192.168.0.105",
+                                           b"algodeclave",
+                                           "192.168.0.105")
 
     try:
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
                 server.initialize_transports(enable_auth=True,
                                              enable_acct=True,
                                              enable_coa=True,
-                                             addresses=['163.10.56.57','127.0.0.1'])))
+                                             addresses=['0.0.0.0','127.0.0.1'])))
 
         try:
             # start server
