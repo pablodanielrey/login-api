@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='login-api',
-          version='0.1.1a2',
+          version='0.1.1a3',
           description='Proyecto que implementa la api de login',
           url='https://github.com/pablodanielrey/login-api',
           author='Desarrollo DiTeSi, FCE',
@@ -26,7 +26,7 @@ setup(name='login-api',
             'Programming Language :: Python :: 3.5'
           ],
           packages=find_packages(exclude=['contrib', 'docs', 'test*']),
-          install_requires=['psycopg2',
+          install_requires=['psycopg2-binary',
                             'dateutils>=0.6.6',
                             'requests',
                             'redis==2.10.6',
