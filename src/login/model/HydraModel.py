@@ -18,7 +18,7 @@ class HydraModel:
     def obtener_consent_challenge(self, challenge):
         """
             llamada a :
-                GET /oauth2/auth/requests/consent/{challenge}
+                GET /oauth2/auth/requests/consent?challenge={challenge}
             retorno:
                {
                    challenge: string
@@ -30,7 +30,7 @@ class HydraModel:
                    subject: string
                } 
         """
-        url = '{}/oauth2/auth/requests/consent/{}'.format(self.host, challenge)
+        url = '{}/oauth2/auth/requests/consent?challenge={}'.format(self.host, challenge)
         h = {
             'X-Forwarded-Proto':'https'
         }
@@ -44,7 +44,7 @@ class HydraModel:
         return consent
 
     def aceptar_consent_challenge(self, challenge, data):
-        url = '{}/oauth2/auth/requests/consent/{}/accept'.format(self.host, challenge)
+        url = '{}/oauth2/auth/requests/consent/accept?challenge={}'.format(self.host, challenge)
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -58,7 +58,7 @@ class HydraModel:
         return response
 
     def denegar_consent_challenge(self, challenge):
-        url = '{}/oauth2/auth/requests/consent/{}/reject'.format(self.host, challenge)
+        url = '{}/oauth2/auth/requests/consent/reject?challenge={}'.format(self.host, challenge)
         data = {
             'error':'id_del_error',
             'error_description': 'descripción del error'
@@ -76,7 +76,7 @@ class HydraModel:
     def obtener_login_challenge(self, challenge):
         """
             llamada a :
-                GET /oauth2/auth/requests/login/{challenge}
+                GET /oauth2/auth/requests/login?challenge={challenge}
             retorno:
                {
                    challenge: string
@@ -88,7 +88,7 @@ class HydraModel:
                    subject: string
                } 
         """
-        url = '{}/oauth2/auth/requests/login/{}'.format(self.host, challenge)
+        url = '{}/oauth2/auth/requests/login?challenge={}'.format(self.host, challenge)
         h = {
             'X-Forwarded-Proto':'https'
         }
@@ -102,7 +102,7 @@ class HydraModel:
         return login
 
     def aceptar_login_challenge(self, challenge, data):
-        url = '{}/oauth2/auth/requests/login/{}/accept'.format(self.host, challenge)
+        url = '{}/oauth2/auth/requests/login/accept?challenge={}'.format(self.host, challenge)
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -116,7 +116,7 @@ class HydraModel:
         return response
 
     def denegar_login_challenge(self, challenge, data):
-        url = '{}/oauth2/auth/requests/login/{}/reject'.format(self.host, challenge)
+        url = '{}/oauth2/auth/requests/login/reject?challenge={}'.format(self.host, challenge)
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -134,7 +134,7 @@ class HydraModel:
     """
 
     def obtener_consent_sesiones(self, uid):
-        url = '{}/oauth2/auth/sessions/consent/{}'.format(self.host, uid)
+        url = '{}/oauth2/auth/sessions/consent?subject={}'.format(self.host, uid)
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -147,7 +147,7 @@ class HydraModel:
         return response        
 
     def eliminar_sesiones_usuario(self, uid):
-        url = '{}/oauth2/auth/sessions/consent/{}'.format(self.host, uid)
+        url = '{}/oauth2/auth/sessions/consent?subject={}'.format(self.host, uid)
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -158,7 +158,7 @@ class HydraModel:
             raise Exception(r.status_code)
 
     def eliminar_sesiones_cliente_usuario(self, cid, uid):
-        url = '{}/oauth2/auth/sessions/consent/{}/{}'.format(self.host, uid, cid)
+        url = '{}/oauth2/auth/sessions/consent?subject={}&client={}'.format(self.host, uid, cid)
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
@@ -169,7 +169,7 @@ class HydraModel:
             raise Exception(r.status_code)
 
     def eliminar_sesion_login_usuario(self, uid):
-        url = '{}/oauth2/auth/sessions/login/{}'.format(self.host, uid)
+        url = '{}/oauth2/auth/sessions/login?subject={}'.format(self.host, uid)
         h = {
             'X-Forwarded-Proto':'https',
             'Content-Type': 'application/json'
