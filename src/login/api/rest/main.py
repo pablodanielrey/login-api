@@ -62,7 +62,7 @@ def login():
     with obtener_session() as s:
         try:
             r = LoginModel.login(s, u, c, challenge)
-            session.commit()
+            s.commit()
             return r
         except Exception as e:
             logging.exception(e)
