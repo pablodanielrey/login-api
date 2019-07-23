@@ -14,7 +14,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN pip install --upgrade pip
 
 COPY docker/pip.conf /etc/
-COPY docker/entrypoint.sh /
+
 
 COPY src /src
 RUN cd /src && pip3 install -U --upgrade-strategy=eager --trusted-host pypi.econo.unlp.edu.ar --upgrade -e .
