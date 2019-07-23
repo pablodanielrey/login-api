@@ -1,14 +1,13 @@
-
-from .UsuarioClave import UsuarioClave
-from .ResetClave import ResetClave
-from .Google import ErrorGoogle, RespuestaGoogle
-
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
-from tutorias.model.entities.Tutorias import *
+
+from .UsuarioClave import UsuarioClave
+from .ResetClave import ResetClave
+from .Google import ErrorGoogle, RespuestaGoogle
+from .LoginLog import LoginLog
 
 def crear_tablas():
     engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(

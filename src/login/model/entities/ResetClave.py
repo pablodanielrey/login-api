@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime, Boolean, func, or_
 
-from model_utils import Base
+from login.model.entities import Base
 
 class ResetClave(Base):
 

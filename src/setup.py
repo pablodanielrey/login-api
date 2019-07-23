@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='login-api',
-          version='0.2.2',
+          version='0.2.3',
           description='Proyecto que implementa la api de login',
           url='https://github.com/pablodanielrey/login-api',
           author='Desarrollo DiTeSi, FCE',
