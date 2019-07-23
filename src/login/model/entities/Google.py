@@ -25,5 +25,9 @@ class RespuestaGoogle(Base):
 
     __tablename__ = 'respuesta_google'
 
+    id = Column(String, primary_key=True, default=generateId)
+    creado = Column(DateTime())
+    actualizado = Column(DateTime())    
+
     usuario_id = Column(String)
     respuesta = Column(String)
