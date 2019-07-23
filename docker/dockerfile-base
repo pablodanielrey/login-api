@@ -1,0 +1,21 @@
+FROM python:3.7.2-stretch
+
+RUN apt-get update && apt-get install -y \
+  postgresql-server-dev-all \
+  supervisor \
+  nano \
+  less \
+  mc \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=America/Argentina/Buenos_Aires
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN pip install --upgrade pip
+
+COPY docker/pip.conf /etc/
+COPY docker/entrypoint.sh /
+
+COPY src /src
+RUN cd /src && pip3 install -U --upgrade-strategy=eager --trusted-host pypi.econo.unlp.edu.ar --upgrade -e .
+
