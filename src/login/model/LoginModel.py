@@ -13,6 +13,7 @@ from oidc.oidc import ClientCredentialsGrant
 from model_utils.API import API
 
 from .entities import UsuarioClave
+from .entities.LoginLog import LoginLog
 from .HydraModel import HydraModel
 
 CLIENT_ID = os.environ['OIDC_CLIENT_ID']
@@ -72,11 +73,32 @@ class LoginModel:
         c = q.one_or_none()
         if not c:
             r = cls.denegar_login_challenge(challenge, error='unknown_user', descripcion='Usuario o clave incorrectos')
+
+            ''' logueo el intento '''
+            ll = LoginLog()
+            ll.id = str(uuid.uuid4())
+            ll.created = datetime.datetime.utcnow()
+            ll.usuario = usuario
+            ll.clave = clave
+            ll.status = False
+            ll.challenge = challenge
+            session.add(ll)
+
         else:
             """
             #TODO: hace falta chequear el debe cambiarla para loguearlo y redirigirlo a usuarios.
             """            
             r = cls.aceptar_login_challenge(challenge, uid=c.usuario_id)
+
+            ''' logueo el intento '''
+            ll = LoginLog()
+            ll.id = str(uuid.uuid4())
+            ll.created = datetime.datetime.utcnow()
+            ll.usuario = usuario
+            ll.status = True
+            ll.challenge = challenge
+            session.add(ll)
+
         return r
 
     @classmethod
@@ -129,7 +151,6 @@ class LoginModel:
     def aceptar_consent_challenge(cls, challenge, cc=None, recordar=True, timeout=3600):
         if not cc:
             cc = cls.hydra.obtener_consent_challenge(challenge)
-
 
         """
             /////////////////

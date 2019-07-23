@@ -59,9 +59,10 @@ def login():
     u = data['usuario']
     c = data['clave']
     challenge = data['challenge']
-    with obtener_session(False) as s:
+    with obtener_session() as s:
         try:
             r = LoginModel.login(s, u, c, challenge)
+            session.commit()
             return r
         except Exception as e:
             logging.exception(e)

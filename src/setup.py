@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='login-api',
-          version='0.2.1',
+          version='0.2.2',
           description='Proyecto que implementa la api de login',
           url='https://github.com/pablodanielrey/login-api',
           author='Desarrollo DiTeSi, FCE',
@@ -39,7 +39,7 @@ setup(name='login-api',
                             'xmltodict',
                             'pytz',
                             'gunicorn',
-                            'microservices_common>=2.0.4a4',
+                            'microservices_common>=2.0.8a1',
                             'warden-api',
                             'ptvsd',
                             'google-api-python-client',
