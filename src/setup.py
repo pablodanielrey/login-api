@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='login-api',
-          version='0.2.4',
+          version='0.3.0',
           description='Proyecto que implementa la api de login',
           url='https://github.com/pablodanielrey/login-api',
           author='Desarrollo DiTeSi, FCE',
@@ -45,8 +45,5 @@ setup(name='login-api',
                             'google-api-python-client',
                             'oauth2client'],
           entry_points={
-            'console_scripts': [
-                'rest=login.api.rest.main:main'
-            ]
           }
       )
