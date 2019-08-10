@@ -2,21 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "/src/github/users-api"
-		},
-		{
-			"path": "/src/github/microservices_common"
-		},
-		{
-			"path": "/src/gitlab/stacks"
-		},
-		{
-			"path": "/src/github/warden-api"
-		},
-		{
-			"path": "/src/gitlab/stack-presi"
 		}
 	],
 	"settings": {
