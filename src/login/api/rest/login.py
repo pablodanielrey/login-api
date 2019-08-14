@@ -25,10 +25,13 @@ def get_device_id():
         data = request.json
         logging.info(data)
 
+        """
         with open_session() as session:
             #hash_ = loginModel.generate_device(session, data['app_version'], data)
             hash_ = None
             session.commit()
+        """
+        hash_ = 'leo'
 
         response = {
             'device_hash': hash_
@@ -37,4 +40,3 @@ def get_device_id():
 
     except Exception as e:
         return jsonify({'status': 500, 'response':str(e)}), 500
-
