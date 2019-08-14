@@ -1,26 +1,27 @@
 {
-    // Utilizar IntelliSense para aprender acerca de los posibles atributos.
+    // Use IntelliSense para saber los atributos posibles.
     // Mantenga el puntero para ver las descripciones de los existentes atributos 
     // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Flask (0.11.x or later)",
+            "name": "Python: Flask",
             "type": "python",
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "login.api.rest.main",
-                "LC_ALL": "es_AR.utf-8",
-                "LANG": "es_AR.utf-8"
+                "FLASK_APP": "login.api.rest.wsgi.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "0"
             },
             "args": [
                 "run",
                 "--no-debugger",
                 "--no-reload",
                 "--host=0.0.0.0",
-                "--port=10002"
-            ]
+                "--port=10012"
+            ],
+            "jinja": true
         }
     ]
 }
