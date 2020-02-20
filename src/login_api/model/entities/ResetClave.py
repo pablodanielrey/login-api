@@ -7,7 +7,7 @@ import uuid
 def generateId():
     return str(uuid.uuid4())
     
-class ResetClave(Base):
+class Recover(Base):
 
     __tablename__ = 'reset_clave'
 

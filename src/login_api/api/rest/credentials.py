@@ -8,7 +8,7 @@ import io
 from flask import Blueprint, jsonify, request, send_file, make_response
 
 from login_api.api.rest.models import loginModel
-from login.model import obtener_sesion as open_session
+from login.model import obtener_session as open_session
 
 bp = Blueprint('credentials', __name__, url_prefix='/credentials/api/v1.0')
 

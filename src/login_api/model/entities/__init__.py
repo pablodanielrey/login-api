@@ -26,8 +26,8 @@ class AlchemyEncoder(json.JSONEncoder):
 
 Base = declarative_base()
 
-from .LoginLog import LoginLog
 
+"""
 def crear_tablas():
     engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(
         os.environ['DB_USER'],
@@ -38,3 +38,4 @@ def crear_tablas():
     ), echo=True)
     Base.metadata.create_all(engine)
 
+"""

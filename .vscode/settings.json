@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "env/bin/python",
+    "python.pythonPath": "/home/src/github/login-api/env/bin/python3.7",
     "python.autoComplete.extraPaths": ["/src/github/microservices_common/src"],
     "python.venvPath": "${workspaceFolder}/env"
 }

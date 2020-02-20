@@ -8,7 +8,7 @@ import io
 from flask import Blueprint, jsonify, request, send_file, make_response
 
 from login_api.api.rest.models import loginModel
-from login.model import obtener_sesion as open_session
+from login.model import obtener_session as open_session
 
 bp = Blueprint('recover', __name__, url_prefix='/recover/api/v1.0')
 
@@ -17,7 +17,7 @@ bp = Blueprint('recover', __name__, url_prefix='/recover/api/v1.0')
 def recover_for(user):
     try:
         data = request.json
-        assert 'device' in data and data['device'] is not None
+        assert data and 'device' in data and data['device'] is not None
 
         """
             se registra un hash para iniciar el proceso de recuperación.
