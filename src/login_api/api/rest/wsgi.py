@@ -5,7 +5,7 @@ logging.getLogger().propagate = True
 
 from flask import Flask
 from flask_cors import CORS
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.debug = False
@@ -16,7 +16,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
     registro el encoder para json
 """
 
-from login.model.entities import AlchemyEncoder
+from login_api.model.entities import AlchemyEncoder
 app.json_encoder = AlchemyEncoder
 
 """

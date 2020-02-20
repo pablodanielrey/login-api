@@ -7,8 +7,8 @@ import io
 
 from flask import Blueprint, jsonify, request, send_file, make_response
 
-from login.api.rest.models import loginModel
-from login.model import open_session
+from login_api.api.rest.models import loginModel
+from login.model import obtener_sesion as open_session
 
 bp = Blueprint('recover', __name__, url_prefix='/recover/api/v1.0')
 

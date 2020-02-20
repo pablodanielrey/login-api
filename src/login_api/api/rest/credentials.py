@@ -7,8 +7,8 @@ import io
 
 from flask import Blueprint, jsonify, request, send_file, make_response
 
-from login.api.rest.models import loginModel
-from login.model import open_session
+from login_api.api.rest.models import loginModel
+from login.model import obtener_sesion as open_session
 
 bp = Blueprint('credentials', __name__, url_prefix='/credentials/api/v1.0')
 
@@ -45,7 +45,7 @@ def check_if_temporal():
         assert 'user' in data and data['user'] is not None
 
         """
-            chequea si las credenciales de un usuario son temporal
+            chequea si las credenciales de un usuario son temporales
         """
 
         response = {

@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "login.api.rest.wsgi.py",
+                "FLASK_APP": "login_api.api.rest.wsgi.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0"
             },
