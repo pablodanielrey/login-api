@@ -40,7 +40,7 @@ class RecoverModel:
         return sent
 
     def _get_external_mails(self, mails):
-        return [m for m in mails if m.confirmed and m.email.split('@')[1] not in self.internal_domains]
+        return [m for m in mails if m.email.split('@')[1] not in self.internal_domains]
         
     def recover_for(self, id_number, device):
         """
@@ -62,7 +62,7 @@ class RecoverModel:
         users = UsersModel.get_users(self.users_session, uids=[uid])
         user = users[0]
 
-        mails = [m for m in user.mails if m.confirmed]
+        mails = [m for m in user.mails if m.confirmed and not m.deleted]
         external = self._get_external_mails(mails)
         if len(external) <= 0:
             raise Exception('No tiene correos de contacto confirmados')
