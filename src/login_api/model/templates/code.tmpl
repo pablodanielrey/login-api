@@ -21,7 +21,7 @@
       <div style="width:100%; padding-top:20px;">
 
         <div style=" border-bottom:1px solid #E5E4E4;">
-          <div style="font-size:1.3em; margin-left:10px;">¡Hola! <b>{{ usuario.nombre }} {{usuario.apellido}} </b></div>
+          <div style="font-size:1.3em; margin-left:10px;">¡Hola! <b>{{user.firstname}} {{user.lastname}} </b></div>
           <div style="font-size:1.0em; margin:10px 0 10px 10px;"> Solicitaste recuperar la contraseña de tu cuenta, aquí te enviamos un código de verificación con el que podras restablecer la contraseña. </div>
         </div>
 
@@ -32,7 +32,7 @@
           <b>Códido de Verificación</b>
         </div>
         <div style="font-size: 3em; background-color:white; color:#4c8df3; width:40%; padding: 5px; margin: 0 auto; text-align: center; margin-bottom:20px;">
-          <b>{{ codigo }}</b>
+          <b>{{ code }}</b>
         </div>
 
         <br>

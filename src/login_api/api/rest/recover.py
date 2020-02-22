@@ -4,14 +4,22 @@ import datetime
 from dateutil.parser import parse
 import base64
 import io
+import os
 
 from flask import Blueprint, jsonify, request, send_file, make_response
 
+from login.model import obtener_session as login_open_session
+from users.model import open_session as users_open_session
+
 from login_api.api.rest.models import loginModel
-from login.model import obtener_session as open_session
+from login_api.api.rest.models import mailsModel
+
+from login_api.model import open_session
+from login_api.model.RecoverModel import RecoverModel
+
+INTERNAL_DOMAINS = os.environ['INTERNAL_DOMAINS'].split(',')
 
 bp = Blueprint('recover', __name__, url_prefix='/recover/api/v1.0')
-
 
 @bp.route('/recover/<user>', methods=['POST'])
 def recover_for(user):
@@ -19,46 +27,76 @@ def recover_for(user):
         data = request.json
         assert data and 'device' in data and data['device'] is not None
 
-        """
-            se registra un hash para iniciar el proceso de recuperación.
-            los datos que se guardan son:
-            hash -- user -- device -- email -- code
-        """ 
-        response = {
-            'hash': 'ef32f0j392fj3ofm32f',
-            'email': 'pab***@****.edu.ar',
-            'device': data['device'],
-            'user': user
-        } 
+        device = data['device']
 
-        response = {
-            'status': 200,
-            'response': response
-        }
-        return jsonify(response), 200
+        """
+            se registra una sesion para iniciar el proceso de recuperación.
+            los datos que se guardan son:
+            session -- user -- device -- email -- code
+            la session se usa para los siguientes pasos de la recuperación.
+        """ 
+                
+        with users_open_session() as user_session:
+            with open_session() as recover_session:
+                try:
+                    model = RecoverModel(recover_session, user_session, mailsModel, INTERNAL_DOMAINS)
+                    r = model.recover_for(user, device)
+                    recover_session.commit()
+
+                    response = {
+                        'status': 200,
+                        'response': r
+                    }
+                    return jsonify(response), 200
+
+                except Exception as e:
+                    recover_session.rollback()
+                    response = {
+                        'status': 400,
+                        'response': str(e)
+                    }
+                    return jsonify(response), 200
 
     except Exception as e:
         return jsonify({'status': 500, 'response':str(e)}), 500
 
 
-@bp.route('/check_code/<code>', methods=['POST'])
-def check_code(code):
+@bp.route('/verify_code/<code>', methods=['POST'])
+def verify_code(code):
     try:
         data = request.json
-        assert 'hash' in data and data['hash'] is not None
+        assert data and 'user' in data and data['user'] is not None
+        assert data and 'device' in data and data['device'] is not None
 
         """
             se chequea el codigo generado en el paso anterior con el codigo enviado ahora.
-
-            hash == data['hash']
-            code == data['code']
+            user_identity_number = data['user']
         """
 
-        response = {
-            'status': 200,
-            'response': 'code ok'
-        }
-        return jsonify(response), 200
+        user = data['user']
+
+        with users_open_session() as user_session:
+            with open_session() as recover_session:
+                try:
+                    model = RecoverModel(recover_session, user_session, mailsModel, INTERNAL_DOMAINS)
+                    r = model.verify_code(user, code)
+                    recover_session.commit()
+
+                    response = {
+                        'status': 200,
+                        'response': {
+                            'session':r
+                        }
+                    }
+                    return jsonify(response), 200
+
+                except Exception as e:
+                    recover_session.rollback()
+                    response = {
+                        'status': 400,
+                        'response': str(e)
+                    }
+                    return jsonify(response), 200        
 
     except Exception as e:
         return jsonify({'status': 500, 'response':str(e)}), 500
@@ -68,7 +106,7 @@ def check_code(code):
 def change_credentials():
     try:
         data = request.json
-        assert 'hash' in data and data['hash'] is not None
+        assert 'session' in data and data['session'] is not None
         assert 'credentials' in data and data['credentials'] is not None
 
         """
@@ -76,8 +114,12 @@ def change_credentials():
         """
 
         response = {
+            'status': 'ok'
+        }
+
+        response = {
             'status': 200,
-            'response': 'ok'
+            'response': response
         }
         return jsonify(response), 200
 

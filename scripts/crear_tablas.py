@@ -1,7 +1,7 @@
 
 
 if __name__ == '__main__':
-    import datetime
-    from login.model.entities import crear_tablas
-    crear_tablas()
-
+    from login_api.model.entities.CredentialsReset import CredentialsReset
+    from login_api.model.entities import Base
+    from login_api.model import engine
+    Base.metadata.create_all(engine)
