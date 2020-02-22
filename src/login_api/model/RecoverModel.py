@@ -142,9 +142,6 @@ class RecoverModel:
             raise Exception('Código de seguridad inválido')
 
         cr.deleted = datetime.datetime.utcnow()
-
-        """ ejecuto el cambio de credenciales """
-
         uid = cr.user_id
         username = cr.username
 
