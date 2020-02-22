@@ -14,8 +14,10 @@ class CredentialsReset(Base):
     id = Column(String, primary_key=True, default=generateId)
     created = Column(DateTime())
     updated = Column(DateTime())
+    deleted = Column(DateTime())
 
     user_id = Column(String)
+    username = Column(String)
     email = Column(String)
     code = Column(String)
     verified = Column(DateTime, nullable=True)

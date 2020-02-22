@@ -12,10 +12,11 @@ class RecoverModel:
 
     MAX_RESETS = 5
 
-    def __init__(self, recover_session, users_session, mailsModel, internal_domains=[]):
+    def __init__(self, recover_session, users_session, loginModel, mailsModel, internal_domains=[]):
         self.recover_session = recover_session
         self.users_session = users_session
         self.mailsModel = mailsModel
+        self.loginModel = loginModel
         self.internal_domains = internal_domains
 
     def _generate_code(self):
@@ -69,7 +70,11 @@ class RecoverModel:
 
         if resets >= 2:
             """ si ya se generaron 2 resets para este día, entonces los recupero y uso esos. """
-            resets = self.recover_session.query(CredentialsReset).filter(CredentialsReset.user_id == uid, CredentialsReset.verified == None).all()
+            resets = self.recover_session.query(CredentialsReset).filter(
+                CredentialsReset.user_id == uid, 
+                CredentialsReset.verified == None, 
+                CredentialsReset.deleted == None).all()
+
             sent = [r.email for r in resets]
 
         else:
@@ -85,6 +90,7 @@ class RecoverModel:
             reset.id = str(uuid.uuid4())
             reset.created = datetime.datetime.utcnow()
             reset.user_id = uid
+            reset.username = id_number
             reset.code = code
             reset.verified = None
             reset.email = sent[0]
@@ -104,7 +110,12 @@ class RecoverModel:
         if not uid:
             raise Exception('Usuário inválido')
 
-        cr = self.recover_session.query(CredentialsReset).filter(CredentialsReset.code == code, CredentialsReset.user_id == uid, CredentialsReset.verified == None).one_or_none()
+        cr = self.recover_session.query(CredentialsReset).filter(
+            CredentialsReset.code == code, 
+            CredentialsReset.user_id == uid, 
+            CredentialsReset.verified == None, 
+            CredentialsReset.deleted == None).one_or_none()
+
         if not cr:
             raise Exception('Código inválido')
 
@@ -113,9 +124,30 @@ class RecoverModel:
         """
         session = cr.id
         now = datetime.datetime.utcnow()
-        codes = self.recover_session.query(CredentialsReset).filter(CredentialsReset.user_id == uid, CredentialsReset.verified == None).all()
+        codes = self.recover_session.query(CredentialsReset).filter(CredentialsReset.user_id == uid, CredentialsReset.verified == None, CredentialsReset.deleted == None).all()
         for c in codes:
             c.verified = now
             c.updated = now
 
         return session
+
+    
+    def change_credentials(self, crid, credentials):
+
+        cr = self.recover_session.query(CredentialsReset).filter(CredentialsReset.id == crid).one_or_none()
+        if not cr:
+            raise Exception('Código de seguridad inválido')
+    
+        if not cr.verified or cr.deleted:
+            raise Exception('Código de seguridad inválido')
+
+        cr.deleted = datetime.datetime.utcnow()
+
+        """ ejecuto el cambio de credenciales """
+
+        uid = cr.user_id
+        username = cr.username
+
+        cid = self.loginModel.change_credentials(self.recover_session, uid, username, credentials)
+
+        return cid

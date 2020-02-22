@@ -39,7 +39,7 @@ def recover_for(user):
         with users_open_session() as user_session:
             with open_session() as recover_session:
                 try:
-                    model = RecoverModel(recover_session, user_session, mailsModel, INTERNAL_DOMAINS)
+                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS)
                     r = model.recover_for(user, device)
                     recover_session.commit()
 
@@ -78,7 +78,7 @@ def verify_code(code):
         with users_open_session() as user_session:
             with open_session() as recover_session:
                 try:
-                    model = RecoverModel(recover_session, user_session, mailsModel, INTERNAL_DOMAINS)
+                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS)
                     r = model.verify_code(user, code)
                     recover_session.commit()
 
@@ -111,17 +111,32 @@ def change_credentials():
 
         """
             se reemplaza la clave por la clave enviada en credentials
+            session = id de la entidad CredentialsReset
         """
+        session = data['session']
+        credentials = data['credentials']
 
-        response = {
-            'status': 'ok'
-        }
+        with open_session() as recover_session:
+            try:
+                model = RecoverModel(recover_session, None, loginModel, mailsModel, INTERNAL_DOMAINS)
+                cid = model.change_credentials(session, credentials)
+                recover_session.commit()
 
-        response = {
-            'status': 200,
-            'response': response
-        }
-        return jsonify(response), 200
+                response = {
+                    'status': 200,
+                    'response': {
+                        'session':cid
+                    }
+                }
+                return jsonify(response), 200
+
+            except Exception as e:
+                recover_session.rollback()
+                response = {
+                    'status': 400,
+                    'response': str(e)
+                }
+                return jsonify(response), 200                
 
     except Exception as e:
         return jsonify({'status': 500, 'response':str(e)}), 500
