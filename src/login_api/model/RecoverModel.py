@@ -2,6 +2,7 @@
 import uuid
 import random
 import datetime
+import re
 
 from users.model.UsersModel import UsersModel
 from login_api.model.MailsModel import MailsModel
@@ -11,6 +12,7 @@ from .entities.CredentialsReset import CredentialsReset
 class RecoverModel:
 
     MAX_RESETS = 5
+    REGEXP = re.compile(r"[a-zA-Z0-9_!\"$%&=!*@#;,:.+¿?\^\-]+")
 
     def __init__(self, recover_session, users_session, loginModel, mailsModel, internal_domains=[]):
         self.recover_session = recover_session
@@ -56,7 +58,12 @@ class RecoverModel:
             chequeo la cantidad de intentos por usuario
         """
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        resets = self.recover_session.query(CredentialsReset).filter(CredentialsReset.user_id == uid, CredentialsReset.verified == None, CredentialsReset.created > yesterday).count()
+        resets = self.recover_session.query(CredentialsReset).filter(
+            CredentialsReset.user_id == uid, 
+            CredentialsReset.verified == None, 
+            CredentialsReset.deleted == None, 
+            CredentialsReset.created > yesterday).count()
+
         if resets > self.MAX_RESETS:
             raise Exception('Se llegó al límite de intentos por día')
 
@@ -69,7 +76,7 @@ class RecoverModel:
             raise Exception('No tiene correos de contacto confirmados')
 
         if resets >= 2:
-            """ si ya se generaron 2 resets para este día, entonces los recupero y uso esos. """
+            """ si ya se generaron al menos 2 resets para este día, entonces uso alguno para avisarle que ya se le envió el código """
             resets = self.recover_session.query(CredentialsReset).filter(
                 CredentialsReset.user_id == uid, 
                 CredentialsReset.verified == None, 
@@ -113,27 +120,41 @@ class RecoverModel:
         cr = self.recover_session.query(CredentialsReset).filter(
             CredentialsReset.code == code, 
             CredentialsReset.user_id == uid, 
-            CredentialsReset.verified == None, 
             CredentialsReset.deleted == None).one_or_none()
 
         if not cr:
             raise Exception('Código inválido')
 
+        if cr.verified:
+            raise Exception('Código ya verificado')
+
         """
-            Si verifico un código, verifico todos los que tenga pendientes así se invalidan
+            verifico este código y elimino todos los pendientes.
         """
-        session = cr.id
         now = datetime.datetime.utcnow()
-        codes = self.recover_session.query(CredentialsReset).filter(CredentialsReset.user_id == uid, CredentialsReset.verified == None, CredentialsReset.deleted == None).all()
+        codes = self.recover_session.query(CredentialsReset).filter(
+                    CredentialsReset.user_id == uid, 
+                    CredentialsReset.verified == None,
+                    CredentialsReset.deleted == None).all()
         for c in codes:
-            c.verified = now
             c.updated = now
+            c.deleted = now
+
+        session = cr.id
+        cr.verified = now
+        cr.updated = now
 
         return session
 
-    
     def change_credentials(self, crid, credentials):
 
+        """
+            TODO: chequeo las credenciales por sintaxis válida!! usando regexp
+        """
+        m = self.REGEXP.match(credentials)
+        if not m:
+            raise Exception('Caracteres inválidos en las credenciales')
+        
         cr = self.recover_session.query(CredentialsReset).filter(CredentialsReset.id == crid).one_or_none()
         if not cr:
             raise Exception('Código de seguridad inválido')
