@@ -10,6 +10,6 @@ RUN cd /src && pip3 install .
 
 WORKDIR /src
 
-EXPOSE 10002
+EXPOSE 10012
 
 ENTRYPOINT ["/entrypoint.sh"]
