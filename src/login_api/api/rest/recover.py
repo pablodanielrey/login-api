@@ -18,6 +18,7 @@ from login_api.model import open_session
 from login_api.model.RecoverModel import RecoverModel
 
 INTERNAL_DOMAINS = os.environ['INTERNAL_DOMAINS'].split(',')
+RESET_FROM = os.environ['RESET_CREDENTIALS_FROM']
 
 bp = Blueprint('recover', __name__, url_prefix='/recover/api/v1.0')
 
@@ -39,7 +40,7 @@ def recover_for(user):
         with users_open_session() as user_session:
             with open_session() as recover_session:
                 try:
-                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS)
+                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM)
                     r = model.recover_for(user, device)
                     recover_session.commit()
 
@@ -78,7 +79,7 @@ def verify_code(code):
         with users_open_session() as user_session:
             with open_session() as recover_session:
                 try:
-                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS)
+                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM)
                     r = model.verify_code(user, code)
                     recover_session.commit()
 
@@ -118,7 +119,7 @@ def change_credentials():
 
         with open_session() as recover_session:
             try:
-                model = RecoverModel(recover_session, None, loginModel, mailsModel, INTERNAL_DOMAINS)
+                model = RecoverModel(recover_session, None, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM)
                 cid = model.change_credentials(session, credentials)
                 recover_session.commit()
 

@@ -14,12 +14,13 @@ class RecoverModel:
     MAX_RESETS = 5
     REGEXP = re.compile(r"[a-zA-Z0-9_!\"$%&=!*@#;,:.+¿?\^\-]+")
 
-    def __init__(self, recover_session, users_session, loginModel, mailsModel, internal_domains=[]):
+    def __init__(self, recover_session, users_session, loginModel, mailsModel, internal_domains=[], reset_credentials_from='do-not-reply@domain.com'):
         self.recover_session = recover_session
         self.users_session = users_session
         self.mailsModel = mailsModel
         self.loginModel = loginModel
         self.internal_domains = internal_domains
+        self.reset_credentials_from = reset_credentials_from
 
     def _generate_code(self):
         return str(random.randint(1111,9999))
@@ -37,7 +38,7 @@ class RecoverModel:
         text = templ.render(user=user, code=code)
         sent = []
         for m in mails:
-            r = self.mailsModel.enviar_correo('sistema@econo.unlp.edu.ar', m.email, 'Reseteo de Clave FCE', text)
+            r = self.mailsModel.enviar_correo(self.reset_credentials_from, m.email, 'Reseteo de Clave FCE', text)
             if r.ok:
                 sent.append(m.email)
         return sent
