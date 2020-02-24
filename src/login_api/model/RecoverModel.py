@@ -133,17 +133,18 @@ class RecoverModel:
             verifico este código y elimino todos los pendientes.
         """
         now = datetime.datetime.utcnow()
+        session = cr.id
+        cr.verified = now
+        cr.updated = now
+
         codes = self.recover_session.query(CredentialsReset).filter(
+                    CredentialsReset.id != cr.id,
                     CredentialsReset.user_id == uid, 
                     CredentialsReset.verified == None,
                     CredentialsReset.deleted == None).all()
         for c in codes:
             c.updated = now
             c.deleted = now
-
-        session = cr.id
-        cr.verified = now
-        cr.updated = now
 
         return session
 
