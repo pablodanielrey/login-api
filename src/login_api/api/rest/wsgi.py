@@ -31,8 +31,6 @@ app.url_map.converters['list'] = ListConverter
 
 from . import recover
 from . import credentials
-from . import email
 
 app.register_blueprint(recover.bp)
 app.register_blueprint(credentials.bp)
-app.register_blueprint(email.bp)
