@@ -150,6 +150,8 @@ class LoginModel:
             return None
 
         def _get_primary_email(usr):
+            if 'mails' not in usr:
+                return None
             mails = sorted([m for m in usr['mails'] if m['confirmado'] and not m['eliminado']], key=lambda m: m['email'])
             if len(mails) > 0:
                 return mails[0]
@@ -190,10 +192,11 @@ class LoginModel:
             atk['updated_at'] = updated_at
 
         if 'email' in cc['requested_scope']:
-            em = _get_primary_email(usr)
-            if em:
-                atk['email'] = em['email']
-                atk['email_verified'] = True if em['confirmado'] else False
+            if 'mails' in usr: 
+                em = _get_primary_email(usr)
+                if em:
+                    atk['email'] = em['email']
+                    atk['email_verified'] = True if em['confirmado'] else False
 
         if 'address' in cc['requested_scope']:
             atk['address'] = {
