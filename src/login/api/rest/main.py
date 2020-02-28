@@ -10,7 +10,7 @@ import os
 from dateutil import parser
 import uuid
 
-from werkzeug.contrib.fixers import ProxyFix
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import flask
 from flask import Flask, Response, abort, make_response, jsonify, url_for, request, json, stream_with_context
