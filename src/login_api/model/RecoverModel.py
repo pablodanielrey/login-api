@@ -55,15 +55,10 @@ class RecoverModel:
         if not uid:
             raise Exception('no existe el usuario')
 
-        """
-            chequeo la cantidad de intentos por usuario
-        """
-        yesterday = datetime.datetime.utcnow() - datetime.timedelta(days=1)
         resets = self.recover_session.query(CredentialsReset).filter(
             CredentialsReset.user_id == uid, 
             CredentialsReset.verified == None, 
-            CredentialsReset.deleted == None, 
-            CredentialsReset.created > yesterday).count()
+            CredentialsReset.deleted == None).count()
 
         if resets > self.MAX_RESETS:
             raise Exception('Se llegó al límite de intentos por día')
@@ -75,34 +70,32 @@ class RecoverModel:
         external = self._get_external_mails(mails)
         if len(external) <= 0:
             raise Exception('No tiene correos de contacto confirmados')
-
-        if resets >= 2:
-            """ si ya se generaron al menos 2 resets para este día, entonces uso alguno para avisarle que ya se le envió el código """
-            resets = self.recover_session.query(CredentialsReset).filter(
+ 
+        if resets > 0:
+            reset = self.recover_session.query(CredentialsReset).filter(
                 CredentialsReset.user_id == uid, 
                 CredentialsReset.verified == None, 
-                CredentialsReset.deleted == None).all()
-
-            sent = [r.email for r in resets]
-
+                CredentialsReset.deleted == None).first()
+            code = reset.code
         else:
             code = self._generate_code()
-            sent = self._send_code_to(user, code, external)
-            if len(sent) <= 0:
-                raise Exception('No se pudo enviar el código')
 
-            """
-                Genero el registro de control de reseteos de credenciales
-            """
-            reset = CredentialsReset()
-            reset.id = str(uuid.uuid4())
-            reset.created = datetime.datetime.utcnow()
-            reset.user_id = uid
-            reset.username = id_number
-            reset.code = code
-            reset.verified = None
-            reset.email = sent[0]
-            self.recover_session.add(reset)
+        sent = self._send_code_to(user, code, external)
+        if len(sent) <= 0:
+            raise Exception('No se pudo enviar el código')
+
+        """
+            Genero el registro de control de reseteos de credenciales
+        """
+        reset = CredentialsReset()
+        reset.id = str(uuid.uuid4())
+        reset.created = datetime.datetime.utcnow()
+        reset.user_id = uid
+        reset.username = id_number
+        reset.code = code
+        reset.verified = None
+        reset.email = sent[0]
+        self.recover_session.add(reset)
 
         response = {
             'device': device,
