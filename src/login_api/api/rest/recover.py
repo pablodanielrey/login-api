@@ -13,6 +13,7 @@ from users.model import open_session as users_open_session
 
 from login_api.api.rest.models import loginModel
 from login_api.api.rest.models import mailsModel
+from login_api.api.rest.models import eventsModel
 
 from login_api.model import open_session
 from login_api.model.RecoverModel import RecoverModel
@@ -40,7 +41,7 @@ def recover_for(user):
         with users_open_session() as user_session:
             with open_session() as recover_session:
                 try:
-                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM)
+                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM, eventsModel)
                     r = model.recover_for(user, device)
                     recover_session.commit()
 
@@ -79,7 +80,7 @@ def verify_code(code):
         with users_open_session() as user_session:
             with open_session() as recover_session:
                 try:
-                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM)
+                    model = RecoverModel(recover_session, user_session, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM, eventsModel)
                     r = model.verify_code(user, code)
                     recover_session.commit()
 
@@ -119,7 +120,7 @@ def change_credentials():
 
         with open_session() as recover_session:
             try:
-                model = RecoverModel(recover_session, None, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM)
+                model = RecoverModel(recover_session, None, loginModel, mailsModel, INTERNAL_DOMAINS, RESET_FROM, eventsModel)
                 cid = model.change_credentials(session, credentials)
                 recover_session.commit()
 

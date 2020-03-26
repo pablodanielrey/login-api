@@ -16,6 +16,7 @@ class CredentialsReset(Base):
     updated = Column(DateTime())
     deleted = Column(DateTime())
 
+    is_internal = Column(Boolean, default=False)
     user_id = Column(String)
     username = Column(String)
     email = Column(String)

@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='login-api',
-          version='1.0.1',
+          version='1.0.2',
           description='Proyecto que implementa la api de login',
           url='https://github.com/pablodanielrey/login-api',
           author='Desarrollo DiTeSi, FCE',
@@ -40,7 +40,8 @@ setup(name='login-api',
                             'users-model',
                             'ptvsd',
                             'google-api-python-client',
-                            'oauth2client'],
+                            'oauth2client',
+                            'pulsar-client'],
           entry_points={
           }
       )

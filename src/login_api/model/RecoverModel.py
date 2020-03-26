@@ -7,6 +7,8 @@ import re
 from users.model.UsersModel import UsersModel
 from login_api.model.MailsModel import MailsModel
 
+from .EventsModel import EventsModel
+
 from .entities.CredentialsReset import CredentialsReset
 
 class RecoverModel:
@@ -14,13 +16,14 @@ class RecoverModel:
     MAX_RESETS = 5
     REGEXP = re.compile(r"[a-zA-Z0-9_!\"$%&=!*@#;,:.+¿?\^\-]+")
 
-    def __init__(self, recover_session, users_session, loginModel, mailsModel, internal_domains=[], reset_credentials_from='do-not-reply@domain.com'):
+    def __init__(self, recover_session, users_session, loginModel, mailsModel, internal_domains=[], reset_credentials_from='do-not-reply@domain.com', eventsModel=EventsModel()):
         self.recover_session = recover_session
         self.users_session = users_session
         self.mailsModel = mailsModel
         self.loginModel = loginModel
         self.internal_domains = internal_domains
         self.reset_credentials_from = reset_credentials_from
+        self.events = eventsModel
 
     def _generate_code(self):
         return str(random.randint(1111,9999))
@@ -42,6 +45,12 @@ class RecoverModel:
             if r.ok:
                 sent.append(m.email)
         return sent
+
+    def _has_intenal_mail(self, mails):
+        for m in mails:
+            if m.email.split('@')[1] in self.internal_domains:
+                return True
+        return False
 
     def _get_external_mails(self, mails):
         return [m for m in mails if m.email.split('@')[1] not in self.internal_domains]
@@ -71,6 +80,8 @@ class RecoverModel:
         if len(external) <= 0:
             raise Exception('No tiene correos de contacto confirmados')
  
+        is_intenal = self._has_intenal_mail(mails)
+
         if resets > 0:
             reset = self.recover_session.query(CredentialsReset).filter(
                 CredentialsReset.user_id == uid, 
@@ -94,6 +105,7 @@ class RecoverModel:
         reset.username = id_number
         reset.code = code
         reset.verified = None
+        reset.is_internal = is_intenal
         reset.email = sent[0]
         self.recover_session.add(reset)
 
@@ -162,5 +174,9 @@ class RecoverModel:
         username = cr.username
 
         cid = self.loginModel.change_credentials(self.recover_session, uid, username, credentials)
+        if cr.is_intenal:
+            cr.email
+            msg = f"{username};{credentials}"
+            self.events.send(msg)
 
         return cid
