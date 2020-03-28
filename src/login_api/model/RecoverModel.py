@@ -175,8 +175,6 @@ class RecoverModel:
 
         cid = self.loginModel.change_credentials(self.recover_session, uid, username, credentials)
         if cr.is_intenal:
-            cr.email
-            msg = f"{username};{credentials}"
-            self.events.send(msg)
+            self.events.send(username, credentials)
 
         return cid
