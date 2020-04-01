@@ -123,16 +123,21 @@ class RecoverModel:
         if not uid:
             raise Exception('Usuário inválido')
 
-        cr = self.recover_session.query(CredentialsReset).filter(
+        crs = self.recover_session.query(CredentialsReset).filter(
             CredentialsReset.code == code, 
             CredentialsReset.user_id == uid, 
-            CredentialsReset.deleted == None).one_or_none()
+            CredentialsReset.deleted == None).all()
 
-        if not cr:
+        if len(crs) <= 0:
             raise Exception('Código inválido')
 
-        if cr.verified:
-            raise Exception('Código ya verificado')
+        cr = None
+        for c in crs:
+            if not c.verified:
+                cr = c
+                break
+        else:
+            raise Exception('Código inválido')
 
         """
             verifico este código y elimino todos los pendientes.
