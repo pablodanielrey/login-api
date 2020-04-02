@@ -179,7 +179,7 @@ class RecoverModel:
         username = cr.username
 
         cid = self.loginModel.change_credentials(self.recover_session, uid, username, credentials)
-        if cr.is_intenal:
+        if cr.is_internal:
             self.events.send(username, credentials)
 
         return cid
