@@ -80,7 +80,7 @@ class RecoverModel:
         if len(external) <= 0:
             raise Exception('No tiene correos de contacto confirmados')
  
-        is_intenal = self._has_intenal_mail(mails)
+        is_internal = self._has_intenal_mail(mails)
 
         if resets > 0:
             reset = self.recover_session.query(CredentialsReset).filter(
@@ -105,7 +105,7 @@ class RecoverModel:
         reset.username = id_number
         reset.code = code
         reset.verified = None
-        reset.is_internal = is_intenal
+        reset.is_internal = is_internal
         reset.email = sent[0]
         self.recover_session.add(reset)
 
