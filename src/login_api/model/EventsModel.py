@@ -13,15 +13,18 @@ PULSAR_SUBSCRIPTION = os.environ.get('PULSAR_SUBSCRIPTION', 'google')
 class EventsModel:
 
     def __init__(self):
-        self.client = pulsar.Client(PULSAR_URL)
-        self.producer = self.client.create_producer(topic=PULSAR_TOPIC, schema=JsonSchema(LoginEvent))
+        #self.client = pulsar.Client(PULSAR_URL)
+        #self.producer = self.client.create_producer(topic=PULSAR_TOPIC, schema=JsonSchema(LoginEvent))
+        pass
 
     def __del__(self):
-        self.producer.close()
-        self.client.close()
+        #self.producer.close()
+        #self.client.close()
+        pass
 
     def send(self, username, credentials):
-        msg = LoginEvent(type_=LoginEventTypes.CHANGE_CREDENTIALS.value, 
-                         username=username, 
-                         credentials=credentials)
-        self.producer.send(msg)
+        #msg = LoginEvent(type_=LoginEventTypes.CHANGE_CREDENTIALS.value, 
+        #                 username=username, 
+        #                 credentials=credentials)
+        #self.producer.send(msg)
+        pass
